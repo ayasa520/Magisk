@@ -231,6 +231,14 @@ static void recreate_sbin(const char *mirror, bool use_bind_mount) {
     }
 }
 
+static void patch_socket_name(const char *path) {
+    static char rstr[16] = { 0 };
+    if (rstr[0] == '\0')
+        gen_rand_str(rstr, sizeof(rstr));
+    auto bin = mmap_data(path, true);
+    bin.patch(RANDOM_SOCKET_NAME, rstr);
+}
+
 static void extract_files(bool sbin) {
     const char *magisk_xz = sbin ? "/sbin/magisk.xz" : "magisk.xz";
     const char *stub_xz = sbin ? "/sbin/stub.xz" : "stub.xz";
@@ -242,6 +250,7 @@ static void extract_files(bool sbin) {
         int fd = xopen("magisk", O_WRONLY | O_CREAT, 0755);
         unxz(fd, magisk);
         close(fd);
+        patch_socket_name("magisk");
     }
     if (access(stub_xz, F_OK) == 0) {
         mmap_data stub(stub_xz);
