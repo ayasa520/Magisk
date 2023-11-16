@@ -6,7 +6,7 @@
 #include <string_view>
 #include <bitset>
 #include <rust/cxx.h>
-
+#include <random>
 #include "xwrap.hpp"
 
 #define DISALLOW_COPY_AND_MOVE(clazz) \
@@ -209,6 +209,8 @@ constexpr auto operator+(T e) noexcept ->
     return static_cast<std::underlying_type_t<T>>(e);
 }
 
+std::mt19937_64 &get_rand(const void *seed_buf = nullptr);
+int gen_rand_str(char *buf, int len, bool varlen = true);
 struct Utf8CStr {
     const char *data() const;
     size_t length() const;
