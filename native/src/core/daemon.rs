@@ -1,7 +1,7 @@
 use crate::bootstages::BootState;
 use crate::consts::{
     MAGISK_FILE_CON, MAGISK_FULL_VER, MAGISK_PROC_CON, MAGISK_VER_CODE, MAGISK_VERSION,
-    MAIN_CONFIG, MAIN_SOCKET, ROOTMNT, ROOTOVL,
+    MAIN_CONFIG, RANDOM_SOCKET_NAME, ROOTMNT, ROOTOVL,
 };
 use crate::db::Sqlite3;
 use crate::ffi::{
@@ -407,9 +407,9 @@ fn daemon_entry() {
     };
     MAGISKD.set(daemon).ok();
 
-    let sock_path = cstr::buf::new::<64>()
-        .join_path(get_magisk_tmp())
-        .join_path(MAIN_SOCKET);
+    let mut sock_path = cstr::buf::new::<64>();
+    write!(sock_path, "/dev/magisk:socket:{}", RANDOM_SOCKET_NAME.trim_end_matches('\0')).ok();
+
     sock_path.remove().ok();
 
     let Ok(sock) = UnixListener::bind(&sock_path).log() else {
@@ -431,9 +431,8 @@ fn daemon_entry() {
 }
 
 pub fn connect_daemon(code: RequestCode, create: bool) -> LoggedResult<UnixStream> {
-    let sock_path = cstr::buf::new::<64>()
-        .join_path(get_magisk_tmp())
-        .join_path(MAIN_SOCKET);
+    let mut sock_path = cstr::buf::new::<64>();
+    write!(sock_path, "/dev/magisk:socket:{}", RANDOM_SOCKET_NAME.trim_end_matches('\0')).ok();
 
     fn send_request(code: RequestCode, mut socket: UnixStream) -> LoggedResult<UnixStream> {
         socket.write_pod(&code.repr).log_ok();
