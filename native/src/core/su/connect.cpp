@@ -202,7 +202,7 @@ void app_notify(const SuAppRequest &info, SuPolicy policy) {
 int app_request(const SuAppRequest &info) {
     // Create FIFO
     char fifo[64];
-    ssprintf(fifo, sizeof(fifo), "%s/" INTLROOT "/su_request_%d", get_magisk_tmp(), info.pid);
+    ssprintf(fifo, sizeof(fifo), "/dev/magisk:su_request:%s:%d", RANDOM_SOCKET_NAME, info.pid);
     mkfifo(fifo, 0600);
     chown(fifo, info.mgr_uid, info.mgr_uid);
     setfilecon(fifo, MAGISK_FILE_CON);

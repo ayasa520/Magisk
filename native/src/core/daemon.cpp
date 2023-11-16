@@ -352,7 +352,7 @@ static void daemon_entry() {
 
     fd = xsocket(AF_LOCAL, SOCK_STREAM | SOCK_CLOEXEC, 0);
     sockaddr_un addr = {.sun_family = AF_LOCAL};
-    ssprintf(addr.sun_path, sizeof(addr.sun_path), "%s/" MAIN_SOCKET, get_magisk_tmp());
+    ssprintf(addr.sun_path, sizeof(addr.sun_path), "/dev/magisk:socket:%s", RANDOM_SOCKET_NAME);
     unlink(addr.sun_path);
     if (xbind(fd, (sockaddr *) &addr, sizeof(addr)))
         exit(1);
@@ -390,7 +390,7 @@ int connect_daemon(int req, bool create) {
     int fd = xsocket(AF_LOCAL, SOCK_STREAM | SOCK_CLOEXEC, 0);
     sockaddr_un addr = {.sun_family = AF_LOCAL};
     const char *tmp = get_magisk_tmp();
-    ssprintf(addr.sun_path, sizeof(addr.sun_path), "%s/" MAIN_SOCKET, tmp);
+    ssprintf(addr.sun_path, sizeof(addr.sun_path), "/dev/magisk:socket:%s", RANDOM_SOCKET_NAME);
     if (connect(fd, (sockaddr *) &addr, sizeof(addr))) {
         if (!create || getuid() != AID_ROOT) {
             LOGE("No daemon is currently running!\n");
