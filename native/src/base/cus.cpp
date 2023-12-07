@@ -55,3 +55,8 @@ int tmpfs_mount(Utf8CStr from, Utf8CStr to){
         VLOGDG("mnt_tmp", "tmpfs", to.c_str());
     return ret;
 }
+
+bool selinux_enabled() {
+    return access("/sys/fs/selinux/enforce", F_OK) == 0;
+}
+
