@@ -55,3 +55,8 @@ int tmpfs_mount(const char *from, const char *to){
         VLOGDG("mnt_tmp", "tmpfs", to);
     return ret;
 }
+
+bool selinux_enabled() {
+    return access("/sys/fs/selinux/enforce", F_OK) == 0;
+}
+

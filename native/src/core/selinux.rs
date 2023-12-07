@@ -1,5 +1,6 @@
 use crate::consts::{DATABIN, LOG_PIPE, MAGISK_LOG_CON, MAGISKDB, MODULEROOT, SECURE_DIR};
 use crate::ffi::get_magisk_tmp;
+use base::libc::{F_OK, O_CLOEXEC, O_WRONLY};
 use base::{Directory, FsPathBuilder, LoggedResult, ResultExt, Utf8CStr, Utf8CStrBuf, cstr, libc};
 use nix::fcntl::OFlag;
 use std::io::Write;
@@ -8,6 +9,10 @@ const UNLABEL_CON: &Utf8CStr = cstr!("u:object_r:unlabeled:s0");
 const SYSTEM_CON: &Utf8CStr = cstr!("u:object_r:system_file:s0");
 const ADB_CON: &Utf8CStr = cstr!("u:object_r:adb_data_file:s0");
 const ROOT_CON: &Utf8CStr = cstr!("u:object_r:rootfs:s0");
+
+fn selinux_enabled() -> bool {
+    unsafe { libc::access(cstr!("/sys/fs/selinux/enforce").as_ptr(), F_OK) == 0 }
+}
 
 fn restore_syscon_from_unlabeled(
     path: &mut dyn Utf8CStrBuf,
@@ -52,6 +57,10 @@ fn restore_syscon(path: &mut dyn Utf8CStrBuf) -> LoggedResult<()> {
 }
 
 pub(crate) fn restorecon() {
+    if !selinux_enabled() {
+        return;
+    }
+
     if let Ok(mut file) = cstr!("/sys/fs/selinux/context")
         .open(OFlag::O_WRONLY | OFlag::O_CLOEXEC)
         .log()
@@ -73,6 +82,10 @@ pub(crate) fn restorecon() {
 }
 
 pub(crate) fn restore_tmpcon() -> LoggedResult<()> {
+    if !selinux_enabled() {
+        return Ok(());
+    }
+
     let tmp = get_magisk_tmp();
     if tmp == "/sbin" {
         tmp.set_secontext(ROOT_CON)?;
