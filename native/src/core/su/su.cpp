@@ -443,7 +443,7 @@ void exec_root_shell(int client, int pid, SuRequest &req, MntNsMode mode) {
     }
 
     // Config privileges
-    if (!req.context.empty()) {
+    if (!req.context.empty() && selinux_enabled()) {
         auto f = xopen_file("/proc/self/attr/exec", "we");
         if (f) fprintf(f.get(), "%s", req.context.c_str());
     }
