@@ -27,7 +27,7 @@ use nix::sys::signal::SigSet;
 use nix::unistd::{dup2_stderr, dup2_stdin, dup2_stdout, getpid, getuid, setsid};
 use num_traits::AsPrimitive;
 use std::fmt::Write as _;
-use std::io::{BufReader, Write};
+use std::io::{BufReader, Read, Write};
 use std::os::fd::{AsFd, AsRawFd, IntoRawFd, RawFd};
 use std::os::unix::net::{UCred, UnixListener, UnixStream};
 use std::process::{Command, exit};
@@ -176,6 +176,16 @@ impl MagiskD {
         true
     }
 
+    fn is_selinux_enforced(&self) -> bool {
+        if let Ok(mut file) = cstr!("/sys/fs/selinux/enforce").open(OFlag::O_RDONLY) {
+            let mut buf = [0u8; 1];
+            if file.read_exact(&mut buf).is_ok() {
+                return buf[0] != b'0';
+            }
+        }
+        false
+    }
+
     fn handle_requests(&'static self, mut client: UnixStream) {
         let Ok(cred) = client.peer_cred() else {
             // Client died
@@ -198,7 +208,7 @@ impl MagiskD {
 
         let is_root = cred.uid == 0;
         let is_shell = cred.uid == 2000;
-        let is_zygote = &context == "u:r:zygote:s0";
+        let is_zygote = &context == "u:r:zygote:s0" || !self.is_selinux_enforced();
 
         if !is_root && !is_zygote && !self.is_client(cred.pid.unwrap_or(-1)) {
             // Unsupported client state
