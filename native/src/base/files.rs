@@ -296,8 +296,8 @@ impl Utf8CStr {
             #[cfg(feature = "selinux")]
             con: cstr::buf::new(),
         };
-        #[cfg(feature = "selinux")]
-        self.get_secontext(&mut attr.con)?;
+        // #[cfg(feature = "selinux")]:
+        // self.get_secontext(&mut attr.con)?;
         Ok(attr)
     }
 
@@ -320,10 +320,10 @@ impl Utf8CStr {
             )?;
         }
 
-        #[cfg(feature = "selinux")]
-        if !attr.con.is_empty() {
-            self.set_secontext(&attr.con)?;
-        }
+        // #[cfg(feature = "selinux")]
+        // if !attr.con.is_empty() {
+        //     self.set_secontext(&attr.con)?;
+        // }
         Ok(())
     }
 
