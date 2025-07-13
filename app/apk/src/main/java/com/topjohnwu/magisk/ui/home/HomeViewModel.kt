@@ -6,6 +6,7 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.databinding.Bindable
+import android.util.Log
 import com.topjohnwu.magisk.BR
 import com.topjohnwu.magisk.R
 import com.topjohnwu.magisk.arch.ActivityExecutor
@@ -151,7 +152,7 @@ class HomeViewModel(
         if (magiskState == State.INVALID || checkedEnv) return
         val cmd = "env_check ${Info.env.versionString} ${Info.env.versionCode}"
         val code = Shell.cmd(cmd).await().code
-        if (code != 0) {
+        if (code != 0 && code != 2) {
             EnvFixDialog(this, code).show()
         }
         checkedEnv = true
