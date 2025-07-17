@@ -1,6 +1,13 @@
 {
     "files.associations": {
         "ranges": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "array": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
+        "bitset": "cpp",
+        "initializer_list": "cpp",
+        "span": "cpp",
+        "valarray": "cpp"
     }
 }
