@@ -11,6 +11,7 @@ use crate::logging::{android_logging, magisk_logging, setup_logfile, start_log_d
 use crate::module::remove_modules;
 use crate::package::ManagerInfo;
 use crate::resetprop::{get_prop, set_prop};
+use crate::rezygisk::{extract_rezygisk_to, install_rezygisk};
 use crate::selinux::restore_tmpcon;
 use crate::socket::{IpcRead, IpcWrite};
 use crate::su::SuInfo;

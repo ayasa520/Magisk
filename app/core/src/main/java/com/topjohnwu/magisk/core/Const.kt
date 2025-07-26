@@ -43,7 +43,7 @@ object Const {
         const val SOURCE_CODE_URL = "https://github.com/topjohnwu/Magisk"
 
         const val GITHUB_API_URL = "https://api.github.com/"
-        const val GITHUB_PAGE_URL = "https://topjohnwu.github.io/magisk-files/"
+        const val GITHUB_PAGE_URL = "https://raw.githubusercontent.com/mistrmochov/MagiskForWaydroid/refs/heads/master/"
         const val INVALID_URL = "https://example.com/"
     }
 

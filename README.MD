@@ -4,6 +4,10 @@
 
 #### This is not an officially supported Google product
 
+## Notice
+
+**This is forked Magisk, that includes patches for being able to run on Waydroid, please do not use on actual devices!**
+
 ## Introduction
 
 Magisk is a suite of open source software for customizing Android, supporting devices higher than Android 6.0.<br>
