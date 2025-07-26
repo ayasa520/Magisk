@@ -27,6 +27,8 @@ import com.topjohnwu.magisk.net.Networking;
 import com.topjohnwu.magisk.net.Request;
 import com.topjohnwu.magisk.utils.APKInstall;
 
+import org.json.JSONException;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,7 +50,9 @@ public class DownloadActivity extends Activity {
     private static final String APP_NAME = "Magisk";
     private static final String JSON_URL = "https://raw.githubusercontent.com/mistrmochov/MagiskForWaydroid/refs/heads/master/stable.json";
 
+    private String apkLink = BuildConfig.APK_URL;
     private Context themed;
+    private ProgressDialog dialog;
     private boolean dynLoad;
 
     @Override
