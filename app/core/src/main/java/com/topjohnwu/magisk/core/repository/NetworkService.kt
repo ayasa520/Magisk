@@ -75,7 +75,7 @@ class NetworkService(
     }
 
     private inline fun Release.asPublicInfo(selector: (ReleaseAssets) -> Boolean): UpdateInfo {
-        val version = tag.drop(1)
+        val version = tag.drop(1) + "-Waydroid"
         val date = dateFormat.format(createdTime)
         return UpdateInfo(
             version = version,

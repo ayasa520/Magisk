@@ -2,11 +2,11 @@
   "magisk": {
     "version": "30.1-Waydroid",
     "versionCode": "30100",
-    "link": "https://github.com/mistrmochov/MagiskForWaydroid/releases/download/v30.1-Waydroid/app-release.apk",
+    "link": "https://github.com/mistrmochov/MagiskForWaydroid/releases/download/v30.1/app-release.apk",
     "note": "https://github.com/topjohnwu/Magisk/releases/download/v30.1/notes.md"
   },
   "stub": {
     "versionCode": "40",
-    "link": "https://github.com/mistrmochov/MagiskForWaydroid/releases/download/v30.1-Waydroid/stub-release.apk"
+    "link": "https://github.com/mistrmochov/MagiskForWaydroid/releases/download/v30.1/stub-release.apk"
   }
 }
