@@ -350,9 +350,9 @@ impl Utf8CStr {
                 con.as_ptr().cast(),
                 con.len() + 1,
                 0,
-            )
-            .check_os_err("lsetxattr", Some(self), Some(con))
+            );
         }
+        Ok(())
     }
 
     pub fn parent_dir(&self) -> Option<&str> {
