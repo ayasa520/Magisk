@@ -1,10 +1,11 @@
-use base::{FsPathBuilder, ResultExt, Utf8CStr, cstr};
+use base::{FsPathBuilder, ResultExt, Utf8CStr, cstr, info};
 use std::fs::{self, File, remove_file};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
 static REZYGISK_ZIP: &[u8] = include_bytes!("rezygisk.zip");
+const UTIL_F: &str = include_str!("util_functions.sh");
 
 pub fn extract_rezygisk_to(path: &Path) -> std::io::Result<()> {
     if path.exists() {
@@ -25,6 +26,7 @@ pub fn install_rezygisk(rezygisk_path: &Path, secure_dir: &Utf8CStr) -> std::io:
             fs::remove_file(zygisk_module)?;
         }
     }
+    info!("* Injecting ReZygisk");
     let module_installer = PathBuf::from(secure_dir).join("magisk/module_installer.sh");
     let util_functions = PathBuf::from(secure_dir).join("magisk/util_functions.sh");
     if (module_installer.exists() && module_installer.is_file())
@@ -32,11 +34,7 @@ pub fn install_rezygisk(rezygisk_path: &Path, secure_dir: &Utf8CStr) -> std::io:
         && (util_functions.exists() && util_functions.is_file())
     {
         let util_functions_str = fs::read_to_string(&util_functions)?;
-        if util_functions_str.contains("mount_partitions") {
-            let mut new = util_functions_str.replace("mount_partitions", "#mount_partitions");
-            new = new.replacen("#mount_partitions", "mount_partitions", 1);
-            fs::write(&util_functions, new)?;
-        }
+        fs::write(&util_functions, UTIL_F)?;
 
         Command::new("sh")
             .args([
@@ -47,11 +45,7 @@ pub fn install_rezygisk(rezygisk_path: &Path, secure_dir: &Utf8CStr) -> std::io:
             ])
             .output()?;
 
-        let util_functions_str = fs::read_to_string(&util_functions)?;
-        if util_functions_str.contains("#mount_partitions") {
-            let new = util_functions_str.replace("#mount_partitions", "mount_partitions");
-            fs::write(&util_functions, new)?;
-        }
+        fs::write(&util_functions, util_functions_str)?;
 
         if rezygisk_path.exists() {
             fs::remove_file(rezygisk_path)?;
