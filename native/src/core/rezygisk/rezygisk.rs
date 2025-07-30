@@ -1,11 +1,13 @@
 use base::{FsPathBuilder, ResultExt, Utf8CStr, cstr, info};
-use std::fs::{self, File, remove_file};
+use std::fs::{self, File, Permissions, remove_file};
 use std::io::Write;
+use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
 static REZYGISK_ZIP: &[u8] = include_bytes!("rezygisk.zip");
 const UTIL_F: &str = include_str!("util_functions.sh");
+const MODULE_I: &str = include_str!("module_installer.sh");
 
 pub fn extract_rezygisk_to(path: &Path) -> std::io::Result<()> {
     if path.exists() {
@@ -28,10 +30,21 @@ pub fn install_rezygisk(rezygisk_path: &Path, secure_dir: &Utf8CStr) -> std::io:
     }
     let module_installer = PathBuf::from(secure_dir).join("magisk/module_installer.sh");
     let util_functions = PathBuf::from(secure_dir).join("magisk/util_functions.sh");
-    if (module_installer.exists() && module_installer.is_file())
-        && (rezygisk_path.exists() && rezygisk_path.is_file())
+    if (rezygisk_path.exists() && rezygisk_path.is_file())
         && (util_functions.exists() && util_functions.is_file())
     {
+        if !module_installer.exists() || !module_installer.is_file() {
+            if module_installer.exists() {
+                if module_installer.is_dir() {
+                    fs::remove_dir_all(&module_installer)?;
+                } else {
+                    fs::remove_file(&module_installer)?;
+                }
+            }
+
+            fs::write(&module_installer, MODULE_I)?;
+            fs::set_permissions(&module_installer, Permissions::from_mode(0o755))?;
+        }
         info!("* Injecting ReZygisk");
         let util_functions_str = fs::read_to_string(&util_functions)?;
         fs::write(&util_functions, UTIL_F)?;
