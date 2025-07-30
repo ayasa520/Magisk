@@ -26,13 +26,13 @@ pub fn install_rezygisk(rezygisk_path: &Path, secure_dir: &Utf8CStr) -> std::io:
             fs::remove_file(zygisk_module)?;
         }
     }
-    info!("* Injecting ReZygisk");
     let module_installer = PathBuf::from(secure_dir).join("magisk/module_installer.sh");
     let util_functions = PathBuf::from(secure_dir).join("magisk/util_functions.sh");
     if (module_installer.exists() && module_installer.is_file())
         && (rezygisk_path.exists() && rezygisk_path.is_file())
         && (util_functions.exists() && util_functions.is_file())
     {
+        info!("* Injecting ReZygisk");
         let util_functions_str = fs::read_to_string(&util_functions)?;
         fs::write(&util_functions, UTIL_F)?;
 
@@ -65,6 +65,19 @@ pub fn install_rezygisk(rezygisk_path: &Path, secure_dir: &Utf8CStr) -> std::io:
 }
 
 pub fn hide_rezygisk() -> std::io::Result<()> {
+    while !std::path::Path::new("/proc").read_dir()?.any(|p| {
+        if let Ok(entry) = p {
+            if let Ok(cmdline) =
+                std::fs::read_to_string(format!("{}/cmdline", entry.path().display()))
+            {
+                return cmdline.contains("com.android.shell");
+            }
+        }
+        false
+    }) {
+        std::thread::sleep(std::time::Duration::from_secs(1));
+    }
+
     let moduleroot = crate::consts::MODULEROOT;
     let rezygisk_dir = PathBuf::from(moduleroot).join("rezygisk");
     let module_prop = cstr::buf::default()
