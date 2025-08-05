@@ -1,5 +1,5 @@
 use base::{FsPathBuilder, ResultExt, Utf8CStr, cstr, info};
-use std::fs::{self, File, Permissions, remove_file};
+use std::fs::{self, File, Permissions};
 use std::io::Write;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
@@ -9,10 +9,8 @@ static REZYGISK_ZIP: &[u8] = include_bytes!("rezygisk.zip");
 const UTIL_F: &str = include_str!("util_functions.sh");
 const MODULE_I: &str = include_str!("module_installer.sh");
 
-pub fn extract_rezygisk_to(path: &Path) -> std::io::Result<()> {
-    if path.exists() {
-        remove_file(path).log_ok();
-    }
+pub fn extract_rezygisk_to(path: &PathBuf) -> std::io::Result<()> {
+    remove_check(path)?;
     let mut file = File::create(path)?;
     file.write_all(REZYGISK_ZIP)?;
     Ok(())
@@ -21,26 +19,14 @@ pub fn extract_rezygisk_to(path: &Path) -> std::io::Result<()> {
 pub fn install_rezygisk(rezygisk_path: &Path, secure_dir: &Utf8CStr) -> std::io::Result<()> {
     let moduleroot = crate::consts::MODULEROOT;
     let zygisk_module = PathBuf::from(moduleroot).join("rezygisk");
-    if zygisk_module.exists() {
-        if zygisk_module.is_dir() {
-            fs::remove_dir_all(zygisk_module)?;
-        } else {
-            fs::remove_file(zygisk_module)?;
-        }
-    }
+    remove_check(&zygisk_module)?;
     let module_installer = PathBuf::from(secure_dir).join("magisk/module_installer.sh");
     let util_functions = PathBuf::from(secure_dir).join("magisk/util_functions.sh");
     if (rezygisk_path.exists() && rezygisk_path.is_file())
         && (util_functions.exists() && util_functions.is_file())
     {
         if !module_installer.exists() || !module_installer.is_file() {
-            if module_installer.exists() {
-                if module_installer.is_dir() {
-                    fs::remove_dir_all(&module_installer)?;
-                } else {
-                    fs::remove_file(&module_installer)?;
-                }
-            }
+            remove_check(&module_installer)?;
 
             fs::write(&module_installer, MODULE_I)?;
             fs::set_permissions(&module_installer, Permissions::from_mode(0o755))?;
@@ -60,18 +46,10 @@ pub fn install_rezygisk(rezygisk_path: &Path, secure_dir: &Utf8CStr) -> std::io:
 
         fs::write(&util_functions, util_functions_str)?;
 
-        if rezygisk_path.exists() {
-            fs::remove_file(rezygisk_path)?;
-        }
+        remove_check(&rezygisk_path.to_path_buf())?;
 
         let installed = PathBuf::from("/data/local/tmp/rezygisk");
-        if installed.exists() {
-            if installed.is_dir() {
-                fs::remove_dir_all(&installed)?;
-            } else {
-                fs::remove_file(&installed)?;
-            }
-        }
+        remove_check(&installed)?;
         File::create(installed)?;
     }
     Ok(())
@@ -97,15 +75,18 @@ pub fn hide_rezygisk() -> std::io::Result<()> {
         .join_path(moduleroot)
         .join_path("rezygisk/module.prop");
     if module_prop.exists() {
-        module_prop.unmount().log_ok();
-    }
-    if rezygisk_dir.exists() {
-        if rezygisk_dir.is_dir() {
-            fs::remove_dir_all(rezygisk_dir)?;
-        } else {
-            fs::remove_file(rezygisk_dir)?;
+        let mut millis = 0;
+        while !module_prop.unmount().is_ok() {
+            millis += 100;
+            if millis >= 20000 {
+                info!("rezygisk: failed to unmount \'{}\'\n", module_prop);
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(100));
         }
+        //module_prop.unmount().log_ok();
     }
+    remove_check(&rezygisk_dir)?;
     Ok(())
 }
 
@@ -113,8 +94,17 @@ pub fn is_rezygisk() -> bool {
     let rezygisk = PathBuf::from(crate::consts::MODULEROOT).join("rezygisk");
     let installed = PathBuf::from("/data/local/tmp/rezygisk");
     let exists = rezygisk.exists() && (installed.exists() && installed.is_file());
-    if installed.exists() && installed.is_file() {
-        fs::remove_file(installed).log_ok();
-    }
+    remove_check(&installed).log_ok();
     exists
+}
+
+pub fn remove_check(file: &PathBuf) -> std::io::Result<()> {
+    if file.exists() {
+        if file.is_dir() {
+            fs::remove_dir_all(file.clone())?;
+        } else {
+            fs::remove_file(file.clone())?;
+        }
+    }
+    Ok(())
 }

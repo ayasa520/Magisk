@@ -179,12 +179,6 @@ impl MagiskD {
 
     pub fn zygisk_reset(&self, mut restore: bool) {
         if !self.zygisk_enabled.load(Ordering::Acquire) {
-            if is_rezygisk() {
-                self.set_db_setting(DbEntryKey::ZygiskConfig, 1).log_ok();
-                std::thread::spawn(|| {
-                    hide_rezygisk().log_ok();
-                });
-            }
             return;
         }
 
@@ -200,13 +194,6 @@ impl MagiskD {
 
         if restore {
             restore_zygisk_prop();
-        }
-
-        if is_rezygisk() {
-            self.set_db_setting(DbEntryKey::ZygiskConfig, 1).log_ok();
-            std::thread::spawn(|| {
-                hide_rezygisk().log_ok();
-            });
         }
     }
 
