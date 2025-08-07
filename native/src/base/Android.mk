@@ -19,5 +19,6 @@ LOCAL_SRC_FILES := \
     misc.cpp \
     logging.cpp \
     base-rs.cpp \
+    cus.cpp \
     ../external/cxx-rs/src/cxx.cc
 include $(BUILD_STATIC_LIBRARY)

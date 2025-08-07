@@ -551,7 +551,7 @@ abstract class MagiskInstallImpl protected constructor(
         return isSuccess
     }
 
-    private fun flashBoot() = "direct_install $installDir $srcBoot".sh().isSuccess
+    private fun flashBoot() = "direct_install \"$installDir\" \"$srcBoot\" \"$AppApkPath\"".sh().isSuccess
 
     private suspend fun postOTA(): Boolean {
         try {
@@ -580,6 +580,8 @@ abstract class MagiskInstallImpl protected constructor(
     protected suspend fun patchFile(file: Uri) = extractFiles() && processFile(file)
 
     protected suspend fun direct() = findImage() && extractFiles() && patchBoot() && flashBoot()
+
+    protected suspend fun direct_system() = extractFiles() && "xdirect_install_system \"$installDir\" \"dummy\" \"$AppApkPath\"".sh().isSuccess
 
     protected suspend fun secondSlot() =
         findSecondary() && extractFiles() && patchBoot() && flashBoot() && postOTA()
@@ -658,6 +660,13 @@ class MagiskInstaller {
         logs: MutableList<String>
     ) : ConsoleInstaller(console, logs) {
         override suspend fun operations() = direct()
+    }
+
+    class Direct_system(
+        console: MutableList<String>,
+        logs: MutableList<String>
+    ) : MagiskInstaller(console, logs) {
+        override suspend fun operations() = direct_system()
     }
 
     class Emulator(

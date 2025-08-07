@@ -7,6 +7,10 @@ pub use magiskpolicy;
 use mount::{is_device_mounted, switch_root};
 use rootdir::{OverlayAttr, inject_magisk_rc};
 
+use std::ffi::CStr;
+use base::libc::c_char;
+use magiskpolicy::ffi::SePolicy;
+
 #[path = "../include/consts.rs"]
 mod consts;
 mod getinfo;
@@ -69,6 +73,7 @@ pub mod ffi {
         fn inject_magisk_rc(fd: i32, tmp_dir: Utf8CStrRef);
         fn switch_root(path: Utf8CStrRef);
         fn is_device_mounted(dev: u64, target: Pin<&mut CxxString>) -> bool;
+        unsafe fn patch_sepol(input: *const c_char, output: *const c_char) -> i32;
     }
 
     // BootConfig
@@ -101,5 +106,30 @@ pub mod ffi {
         fn mount_preinit_dir(self: &mut MagiskInit);
         unsafe fn find_block(self: &MagiskInit, partname: *const c_char) -> u64;
         unsafe fn patch_fissiond(self: &mut MagiskInit, tmp_path: *const c_char);
+    }
+}
+
+// Rust implementation of patch_sepol function
+unsafe fn patch_sepol(input: *const c_char, output: *const c_char) -> i32 {
+    let input_path = match CStr::from_ptr(input).to_str() {
+        Ok(path) => path,
+        Err(_) => return 1,
+    };
+
+    let output_path = match CStr::from_ptr(output).to_str() {
+        Ok(path) => path,
+        Err(_) => return 1,
+    };
+
+    let sepol = match SePolicy::from_file(input_path) {
+        Ok(policy) => policy,
+        Err(_) => return 1,
+    };
+
+    sepol.magisk_rules();
+
+    match sepol.to_file(output_path) {
+        Ok(_) => 0,
+        Err(_) => 2,
     }
 }
