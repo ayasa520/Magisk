@@ -36,6 +36,7 @@ object Info {
     var isRooted = false
     var noDataExec = false
     var patchBootVbmeta = false
+    var isBootPatched = false
 
     @JvmStatic var env = Env()
         private set
@@ -116,6 +117,7 @@ object Info {
         slot = getVar("SLOT")
         legacySAR = getBool("LEGACYSAR")
         isVendorBoot = getBool("VENDORBOOT")
+        isBootPatched = getBool("BOOTIMAGE_PATCHED")
 
         // Default presets
         Config.recovery = getBool("RECOVERYMODE")
