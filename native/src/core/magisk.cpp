@@ -119,7 +119,7 @@ int magisk_main(int argc, char *argv[]) {
             return -1;
         }
         // copy all binaries to sbin
-        const char *bins[] = { "magisk32", "magisk64", "magiskpolicy", "stub.apk", nullptr };
+        const char *bins[] = { "magisk", "magisk32", "magiskpolicy", "stub.apk", nullptr };
         for (int i = 0; bins[i]; i++){
        	    string src = string(argv[2]) + "/" + bins[i];
        	    string dest = string(magisk_tmp) + "/" + bins[i];
@@ -132,11 +132,7 @@ int magisk_main(int argc, char *argv[]) {
         xmkdir(INTLROOT, 0755);
         xmkdir(DEVICEDIR, 0);
 
-#ifdef __LP64__
-        symlink("./magisk64", "./magisk");
-#else
-        symlink("./magisk32", "./magisk");
-#endif
+        // magisk binary is now unified, no need for architecture-specific symlinks
         install_applet(magisk_tmp);
         return 0;
     } else if (argv[1] == "--install"sv) {
