@@ -1,9 +1,10 @@
-use crate::ffi::{backup_init, patch_sepol};
+use crate::ffi::backup_init;
 use crate::mount::is_rootfs;
 use crate::twostage::hexpatch_init_for_second_stage;
 use crate::{
     ffi::{BootConfig, MagiskInit, magisk_proxy_main},
     logging::setup_klog,
+    patch_sepol,
 };
 use base::{
     LibcReturn, LoggedResult, ResultExt, cstr, info,
