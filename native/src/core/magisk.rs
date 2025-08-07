@@ -347,7 +347,7 @@ impl MagiskAction {
                     }
                 }
                 
-                let bins = ["magisk64", "magisk32", "magiskpolicy", "stub.apk"];
+                let bins = ["magisk", "magisk32", "magiskpolicy", "stub.apk"];
                 for bin in &bins {
                     let src = Utf8CString::from(format!("{}/{}", source_dir, bin));
                     let dest = Utf8CString::from(format!("{}/{}", magisk_tmp, bin));
@@ -363,11 +363,6 @@ impl MagiskAction {
                 cstr!(INTERNAL_DIR).mkdir(0o755)?;
                 cstr!(DEVICEDIR).mkdir(0)?;
 
-                #[cfg(target_pointer_width = "64")]
-                simlink("./magisk64", "./magisk");
-                #[cfg(target_pointer_width = "32")]
-                simlink("./magisk32", "./magisk");
-                
                 install_applet(magisk_tmp)?;
             }
             Install(self::InstallApplets { path }) => {
