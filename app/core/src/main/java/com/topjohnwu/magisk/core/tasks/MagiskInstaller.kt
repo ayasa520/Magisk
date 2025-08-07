@@ -665,7 +665,7 @@ class MagiskInstaller {
     class Direct_system(
         console: MutableList<String>,
         logs: MutableList<String>
-    ) : MagiskInstaller(console, logs) {
+    ) : ConsoleInstaller(console, logs) {
         override suspend fun operations() = direct_system()
     }
 
