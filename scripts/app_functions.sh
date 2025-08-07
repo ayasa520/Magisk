@@ -283,7 +283,7 @@ on post-fs-data
     exec u:r:su:s0 root root -- $MAGISKSYSTEMDIR/magiskpolicy --live --magisk
     exec u:r:magisk:s0 root root -- $MAGISKSYSTEMDIR/magiskpolicy --live --magisk
     exec u:r:update_engine:s0 root root -- $MAGISKSYSTEMDIR/magiskpolicy --live --magisk
-    exec u:r:su:s0 root root -- $MAGISKSYSTEMDIR/$magisk_name --auto-selinux --setup-sbin $MAGISKSYSTEMDIR $MAGISKTMP
+    exec u:r:su:s0 root root -- $MAGISKSYSTEMDIR/magisk --auto-selinux --setup-sbin $MAGISKSYSTEMDIR $MAGISKTMP
     exec u:r:su:s0 root root -- $MAGISKTMP/magisk --auto-selinux --post-fs-data
 on nonencrypted
     exec u:r:su:s0 root root -- $MAGISKTMP/magisk --auto-selinux --service
@@ -449,10 +449,9 @@ direct_install_system(){
     }
     cleanup_system_installation || return 1
 
-    local magisk_applet=magisk32 magisk_name=magisk32
-    if [ "$IS64BIT" == true ]; then
-        magisk_name=magisk64
-        magisk_applet="magisk32 magisk64"
+    local magisk_applet=magisk
+    if [ "$IS64BIT" == true ] && [ -f "$INSTALLDIR/magisk32" ]; then
+        magisk_applet="magisk magisk32"
     fi
 
     ui_print "- Copy files to system partition"
