@@ -1,15 +1,36 @@
-use crate::consts::{APPLET_NAMES, MAGISK_VER_CODE, MAGISK_VERSION, POST_FS_DATA_WAIT_TIME};
+use crate::consts::{APPLET_NAMES, DEVICEDIR, INTERNAL_DIR, MAGISK_PROC_CON, MAGISK_VER_CODE, MAGISK_VERSION, POST_FS_DATA_WAIT_TIME};
 use crate::daemon::connect_daemon;
-use crate::ffi::{RequestCode, denylist_cli, get_magisk_tmp, install_module, unlock_blocks};
+use crate::ffi::{RequestCode, denylist_cli, get_magisk_tmp, install_module, mount_sbin, tmpfs_mount, unlock_blocks};
 use crate::mount::find_preinit_device;
 use crate::selinux::restorecon;
 use crate::socket::{Decodable, Encodable};
 use argh::FromArgs;
-use base::{CmdArgs, EarlyExitExt, LoggedResult, Utf8CString, clone_attr};
+use base::{CmdArgs, EarlyExitExt, LoggedResult, Utf8CString, clone_attr, cstr};
 use nix::poll::{PollFd, PollFlags, PollTimeout};
 use std::ffi::c_char;
+use std::fs;
 use std::os::fd::AsFd;
+use std::os::unix::fs::{PermissionsExt, symlink};
 use std::process::exit;
+
+/// 在指定路径创建 applet 符号链接
+fn install_applet(path: &str) -> LoggedResult<()> {
+    let path_obj = std::path::Path::new(path);
+    
+    // 为每个 applet 创建符号链接
+    for name in APPLET_NAMES {
+        let link_path = path_obj.join(name);
+        let _ = fs::remove_file(&link_path); // 删除可能存在的旧链接
+        symlink("./magisk", &link_path)?;
+    }
+    
+    // 创建 supolicy 符号链接
+    let supolicy_path = path_obj.join("supolicy");
+    let _ = fs::remove_file(&supolicy_path);
+    symlink("./magiskpolicy", &supolicy_path)?;
+    
+    Ok(())
+}
 
 fn print_usage() {
     eprintln!(
@@ -76,6 +97,9 @@ enum MagiskAction {
     Path(PathCmd),
     DenyList(DenyList),
     PreInitDevice(PreInitDevice),
+    MountSbin(MountSbin),
+    SetupSbin(SetupSbin),
+    Install(InstallApplets),
 }
 
 #[derive(FromArgs)]
@@ -180,6 +204,26 @@ struct DenyList {
 #[argh(subcommand, name = "--preinit-device")]
 struct PreInitDevice {}
 
+#[derive(FromArgs)]
+#[argh(subcommand, name = "--mount-sbin")]
+struct MountSbin {}
+
+#[derive(FromArgs)]
+#[argh(subcommand, name = "--setup-sbin")]
+struct SetupSbin {
+    #[argh(positional)]
+    source_dir: Utf8CString,
+    #[argh(positional)]
+    target_dir: Option<Utf8CString>,
+}
+
+#[derive(FromArgs)]
+#[argh(subcommand, name = "--install")]
+struct InstallApplets {
+    #[argh(positional)]
+    path: Option<Utf8CString>,
+}
+
 impl MagiskAction {
     fn exec(self) -> LoggedResult<i32> {
         use MagiskAction::*;
@@ -280,6 +324,59 @@ impl MagiskAction {
                     println!("{name}");
                 }
             }
+            MountSbin(_) => {
+                return Ok(mount_sbin());
+            }
+            SetupSbin(self::SetupSbin { source_dir, target_dir }) => {
+                let magisk_tmp_cstr;
+                let magisk_tmp = if let Some(ref dir) = target_dir {
+                    magisk_tmp_cstr = dir;
+                    magisk_tmp_cstr.as_str()
+                } else {
+                    "/sbin"
+                };
+                
+                if magisk_tmp == "/sbin" {
+                    if mount_sbin() != 0 {
+                        return Ok(-1);
+                    }
+                } else {
+                    let magisk_tmp_ref = target_dir.as_ref().unwrap();
+                    if tmpfs_mount(cstr!("magisk"), magisk_tmp_ref) != 0 {
+                        return Ok(-1);
+                    }
+                }
+                
+                let bins = ["magisk64", "magisk32", "magiskpolicy", "stub.apk"];
+                for bin in &bins {
+                    let src = Utf8CString::from(format!("{}/{}", source_dir, bin));
+                    let dest = Utf8CString::from(format!("{}/{}", magisk_tmp, bin));
+                    
+                    if std::path::Path::new(src.as_str()).exists() {
+                        src.copy_to(&dest)?;
+                        let _ = fs::set_permissions(dest.as_str(), fs::Permissions::from_mode(0o755));
+                    }
+                }
+                
+                std::env::set_current_dir(magisk_tmp)?;
+                
+                cstr!(INTERNAL_DIR).mkdir(0o755)?;
+                cstr!(DEVICEDIR).mkdir(0)?;
+
+                #[cfg(target_pointer_width = "64")]
+                simlink("./magisk64", "./magisk");
+                #[cfg(target_pointer_width = "32")]
+                simlink("./magisk32", "./magisk");
+                
+                install_applet(magisk_tmp)?;
+            }
+            Install(self::InstallApplets { path }) => {
+                let install_path = path
+                    .as_ref()
+                    .map(|s| s.as_str())
+                    .unwrap_or("/sbin");
+                install_applet(install_path)?;
+            }
         };
         Ok(0)
     }
@@ -290,7 +387,48 @@ pub fn magisk_main(argc: i32, argv: *mut *mut c_char) -> i32 {
         print_usage();
         exit(1);
     }
+    
     let mut cmds = CmdArgs::new(argc, argv.cast()).0;
+    
+    if cmds.len() >= 2 && cmds[1] == "--auto-selinux" {
+        use std::fs::OpenOptions;
+        use std::io::{Read, Write, Seek, SeekFrom};
+        
+        if let Ok(mut file) = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open("/proc/self/attr/current")
+        {
+            if file.write_all(MAGISK_PROC_CON.as_bytes()).is_ok() {
+                let _ = file.seek(SeekFrom::Start(0));
+                let mut current_con = [0u8; 128];
+                if let Ok(n) = file.read(&mut current_con) {
+                    if let Ok(con_str) = std::str::from_utf8(&current_con[..n]) {
+                        eprintln!("SeLinux context: {}", con_str.trim_end_matches('\0'));
+                    }
+                }
+            } else {
+                let _ = file.seek(SeekFrom::Start(0));
+                if file.write_all(b"u:r:su:s0").is_ok() {
+                    let _ = file.seek(SeekFrom::Start(0));
+                    let mut current_con = [0u8; 128];
+                    if let Ok(n) = file.read(&mut current_con) {
+                        if let Ok(con_str) = std::str::from_utf8(&current_con[..n]) {
+                            eprintln!("SeLinux context: {}", con_str.trim_end_matches('\0'));
+                        }
+                    }
+                }
+            }
+        }
+        
+        cmds.remove(1);
+    }
+    
+    if cmds.len() < 2 {
+        print_usage();
+        exit(1);
+    }
+    
     // We need to manually inject "--" so that all actions can be treated as subcommands
     cmds.insert(1, "--");
     let cli = Cli::from_args(&cmds[..1], &cmds[1..]).on_early_exit(print_usage);

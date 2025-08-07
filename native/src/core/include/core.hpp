@@ -84,6 +84,10 @@ void update_deny_flags(int uid, rust::Str process, uint32_t &flags);
 // MagiskSU
 void exec_root_shell(int client, int pid, SuRequest &req, MntNsMode mode);
 
+// Mount operations
+int mount_sbin();
+int tmpfs_mount(Utf8CStr from, Utf8CStr to);
+
 // Rust bindings
 inline Utf8CStr get_magisk_tmp_rs() { return get_magisk_tmp(); }
 inline rust::String resolve_preinit_dir_rs(Utf8CStr base_dir) {
