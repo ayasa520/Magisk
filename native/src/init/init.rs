@@ -1,5 +1,5 @@
-use crate::ffi::{BootConfig, MagiskInit, backup_init, magisk_proxy_main, patch_sepol};
-use crate::logging::setup_klog;
+use crate::ffi::{BootConfig, MagiskInit, backup_init, magisk_proxy_main};
+use crate::{logging::setup_klog, patch_sepol};
 use crate::mount::is_rootfs;
 use crate::twostage::hexpatch_init_for_second_stage;
 use base::libc::{basename, getpid, mount, umask};
