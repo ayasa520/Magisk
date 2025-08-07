@@ -750,6 +750,52 @@ install_module() {
   ui_print "- Done"
 }
 
+# Magisk Delta
+
+is_rootfs(){
+    local root_blkid="$(mountpoint -d /)"
+    if ! $BOOTMODE && [ -d /system_root ] && mountpoint /system_root; then
+        return 1
+    fi
+    mnt_type="$(head -1 /proc/self/mountinfo | awk '{ printf $9 }')"
+    if $BOOTMODE && [ "$mnt_type" == "rootfs" -o "$mnt_type" == "tmpfs" ]; then
+        return 0
+    fi
+    return 1
+}
+
+mkblknode(){
+    local blk_mm="$(mountpoint -d "$2" | sed "s/:/ /g")"
+    mknod "$1" -m 666 b $blk_mm
+}
+
+warn_system_ro(){
+    ui_print "! System partition is read-only"
+    return 1
+}
+
+remount_check(){
+    local mode="$1"
+    local part="$(realpath "$2")"
+    local ignore_not_exist="$3"
+    local i
+    if ! grep -q " $part " /proc/mounts && [ ! -z "$ignore_not_exist" ]; then
+        return "$ignore_not_exist"
+    fi
+    mount -o "$mode,remount" "$part"
+    local IFS=$'\t\n ,'
+    for i in $(cat /proc/mounts | grep " $part " | awk '{ print $4 }'); do
+        test "$i" == "$mode" && return 0
+    done
+    return 1
+}
+
+force_bind_mount(){
+    mount -o bind,private "$1" "$2"
+    mount -o rw,remount "$2"
+    remount_check rw "$2" || warn_system_ro
+}
+
 ##########
 # Presets
 ##########
