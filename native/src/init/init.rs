@@ -1,4 +1,4 @@
-use crate::ffi::{BootConfig, MagiskInit, backup_init, magisk_proxy_main};
+use crate::ffi::{BootConfig, MagiskInit, backup_init, magisk_proxy_main, patch_sepol};
 use crate::logging::setup_klog;
 use crate::mount::is_rootfs;
 use crate::twostage::hexpatch_init_for_second_stage;
@@ -179,6 +179,20 @@ pub unsafe extern "C" fn main(
 
         if CStr::from_ptr(name) == c"magisk" {
             return magisk_proxy_main(argc, argv);
+        }
+
+        // Handle --patch-sepol argument
+        if argc > 2 {
+            let arg1 = *argv.offset(1);
+            if !arg1.is_null() && CStr::from_ptr(arg1) == c"--patch-sepol" {
+                let input = *argv.offset(2);
+                let output = if argc > 3 {
+                    *argv.offset(3)
+                } else {
+                    input // Use input as output if no output specified
+                };
+                return patch_sepol(input, output);
+            }
         }
 
         if getpid() == 1 {

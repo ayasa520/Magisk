@@ -5,6 +5,7 @@
 #include "../base-rs.hpp"
 #include "../files.hpp"
 #include "../logging.hpp"
+#include "../cus.hpp"
 
 using rust::xpipe2;
 using kv_pairs = std::vector<std::pair<std::string, std::string>>;
