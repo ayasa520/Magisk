@@ -6,6 +6,7 @@ out
 *.log
 /config.prop
 /notes.md
+/build.sh
 native/src/core/.vscode
 
 # Built binaries
