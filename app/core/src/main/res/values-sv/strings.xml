@@ -18,7 +18,7 @@
     <string name="home_package">Paket</string>
     <string name="home_app_title">App</string>
 
-    <string name="home_notice_content">Ladda endast ned magisk från den officiella GitHub-sidan. Filer från okända källor kan innehålla skadlig kod!</string>
+    <string name="home_notice_content">VARNING! Du använder en inofficiell version av Magisk som inte officiellt stöds av Magisk-författaren. Denna version kan innehålla instabila ändringar som kan skada din enhet eller äventyra din säkerhet. Vänligen rapportera inga problem eller begär hjälp från officiella Magisk-kanaler.</string>
     <string name="home_support_title">Stöd oss</string>
     <string name="home_item_source">Källa</string>
     <string name="home_support_content">Magisk är och kommer alltid att vara gratis med öppen källkod. Du kan dock visa din uppskattning genom att skicka en donation</string>

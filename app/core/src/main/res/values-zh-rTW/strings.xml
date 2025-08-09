@@ -20,7 +20,7 @@
     <string name="home_package">套件</string>
     <string name="home_app_title">應用程式</string>
 
-    <string name="home_notice_content">請從官方的 Github 網頁下載 Magisk。從未知來源下載的檔案可能懷有惡意！</string>
+    <string name="home_notice_content">警告！您正在使用 Magisk 的非官方版本，該版本未得到 Magisk 作者的正式支援。此版本可能包含不穩定的修改，可能會損害您的裝置或危及您的安全。請勿回報任何問題或向 Magisk 官方管道請求任何協助。</string>
     <string name="home_support_title">支持開發</string>
     <string name="home_follow_title">追蹤我們</string>
     <string name="home_item_source">原始碼</string>
