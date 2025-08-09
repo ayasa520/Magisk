@@ -19,7 +19,7 @@
     <string name="hide">Hide</string>
     <string name="home_package">Package</string>
     <string name="home_app_title">App</string>
-    <string name="home_notice_content">Download Magisk ONLY from the official GitHub page. Files from unknown sources can be malicious!</string>
+    <string name="home_notice_content">WARNING! You are using an unofficial version of Magisk that is not officially supported by the Magisk author. This version may contain unstable modifications that could harm your device or compromise your security. Please do not report any issues or request any help to official Magisk channels.</string>
     <string name="home_support_title">Support Us</string>
     <string name="home_follow_title">Follow Us</string>
     <string name="home_item_source">Source</string>

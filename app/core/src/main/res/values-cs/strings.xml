@@ -20,7 +20,7 @@
     <string name="home_package">Balíček</string>
     <string name="home_app_title">Aplikace</string>
 
-    <string name="home_notice_content">Stahujte Magisk POUZE z oficiální stránky GitHub. Soubory z neznámých zdrojů mohou být škodlivé!</string>
+    <string name="home_notice_content">VAROVÁNÍ! Používáte neoficiální verzi Magisk, která není oficiálně podporována autorem Magisk. Tato verze může obsahovat nestabilní úpravy, které mohou poškodit vaše zařízení nebo ohrozit vaši bezpečnost. Prosím, nehlašte žádné problémy ani nežádejte o pomoc v oficiálních kanálech Magisk.</string>
     <string name="home_support_title">Podpořte nás</string>
     <string name="home_follow_title">Sledujte nás</string>
     <string name="home_item_source">Zdroj</string>
