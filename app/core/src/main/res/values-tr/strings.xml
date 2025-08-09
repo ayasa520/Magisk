@@ -19,7 +19,7 @@
     <string name="hide">Gizle</string>
     <string name="home_package">Paket</string>
     <string name="home_app_title">Uygulama</string>
-    <string name="home_notice_content">Magisk\'i YALNIZCA resmi GitHub sayfasından indirin. Bilinmeyen kaynaklardan gelen dosyalar kötü amaçlı olabilir!</string>
+    <string name="home_notice_content">UYARI! Magisk yazarı tarafından resmi olarak desteklenmeyen, resmi olmayan bir Magisk sürümü kullanıyorsunuz. Bu sürüm, cihazınıza zarar verebilecek veya güvenliğinizi tehlikeye atabilecek kararsız değişiklikler içerebilir. Lütfen resmi Magisk kanallarına herhangi bir sorun bildirmeyin veya yardım istemeyin.</string>
     <string name="home_support_title">Bize Destek Olun</string>
     <string name="home_follow_title">Bizi Takip Edin</string>
     <string name="home_item_source">Kaynak</string>

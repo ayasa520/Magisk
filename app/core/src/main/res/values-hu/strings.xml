@@ -20,7 +20,7 @@
     <string name="home_package">Csomag</string>
     <string name="home_app_title">App</string>
 
-    <string name="home_notice_content">A Magisk-et CSAK a hivatalos GitHub oldalról töltsd le. Az ismeretlen forrásból származó fájlok rosszindulatúak lehetnek!</string>
+    <string name="home_notice_content">FIGYELEM! A Magisk nem hivatalos verzióját használod, amelyet a Magisk szerzője nem támogat hivatalosan. Ez a verzió instabil módosításokat tartalmazhat, amelyek károsíthatják az eszközödet vagy veszélyeztethetik a biztonságodat. Kérjük, ne jelentsd a problémákat és ne kérj segítséget a hivatalos Magisk csatornákon.</string>
     <string name="home_support_title">Támogass minket</string>
     <string name="home_follow_title">Kövess minket</string>
     <string name="home_item_source">Forrás</string>
