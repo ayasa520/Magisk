@@ -1,0 +1,62 @@
+name: Release Debug APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    name: Build and Release Debug APK
+    runs-on: macos-15
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: Setup environment
+        uses: ./.github/actions/setup
+        with:
+          is-asset-build: true
+
+      - name: Build debug
+        run: ./build.py -v all
+
+      - name: Stop gradle daemon
+        run: ./app/gradlew --stop
+
+      - name: Get version info
+        id: version
+        run: |
+          VERSION_CODE=$(grep 'magisk.versionCode=' app/gradle.properties | cut -d'=' -f2)
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
+          echo "commit_sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+          echo "release_name=Magisk ($COMMIT_SHA) ($VERSION_CODE)" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: debug-${{ steps.version.outputs.commit_sha }}-${{ steps.version.outputs.version_code }}
+          release_name: ${{ steps.version.outputs.release_name }}
+          body: |
+            Debug build of Magisk
+            
+            **Commit:** ${{ steps.version.outputs.commit_sha }}
+            **Version Code:** ${{ steps.version.outputs.version_code }}
+            
+            This is a debug build and should only be used for testing purposes.
+          draft: false
+          prerelease: true
+
+      - name: Upload Debug APK
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: out/app-debug.apk
+          asset_name: Magisk-${{ steps.version.outputs.commit_sha }}-${{ steps.version.outputs.version_code }}-debug.apk
+          asset_content_type: application/vnd.android.package-archive

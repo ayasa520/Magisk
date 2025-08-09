@@ -20,7 +20,7 @@
     <string name="home_package">Gói</string>
     <string name="home_app_title">Ứng dụng</string>
 
-    <string name="home_notice_content">Chỉ nên tải Magisk từ trang GitHub chính thức. Tải tệp từ các nguồn không rõ có thể gây hại!</string>
+    <string name="home_notice_content">CẢNH BÁO! Bạn đang sử dụng phiên bản Magisk không chính thức không được tác giả Magisk hỗ trợ chính thức. Phiên bản này có thể chứa các thay đổi không ổn định có thể làm hại thiết bị của bạn hoặc làm tổn hại bảo mật của bạn. Vui lòng không báo cáo bất kỳ vấn đề nào hoặc yêu cầu trợ giúp từ các kênh Magisk chính thức.</string>
     <string name="home_support_title">Hỗ trợ chúng tôi</string>
     <string name="home_item_source">Nguồn</string>
     <string name="home_support_content">Magisk sẽ, và luôn luôn là, miễn phí và mã nguồn mở. Tuy nhiên, bạn có thể cho chúng tôi thấy rằng bạn quan tâm bằng cách gửi một khoản đóng góp nhỏ.</string>

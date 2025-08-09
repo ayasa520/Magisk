@@ -20,7 +20,7 @@
     <string name="home_package">Pacchetto</string>
     <string name="home_app_title">App</string>
 
-    <string name="home_notice_content">Scarica Magisk SOLTANTO dalla pagina GitHub ufficiale. I file provenienti da fonti sconosciute possono essere dannosi!</string>
+    <string name="home_notice_content">ATTENZIONE! Stai utilizzando una versione non ufficiale di Magisk che non è ufficialmente supportata dall\'autore di Magisk. Questa versione potrebbe contenere modifiche instabili che potrebbero danneggiare il tuo dispositivo o compromettere la tua sicurezza. Si prega di non segnalare problemi o richiedere aiuto ai canali ufficiali di Magisk.</string>
     <string name="home_support_title">Supportaci</string>
     <string name="home_follow_title">Seguici</string>												   
     <string name="home_item_source">Codice sorgente</string>
