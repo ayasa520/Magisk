@@ -20,7 +20,7 @@
     <string name="home_package">Имя пакета</string>
     <string name="home_app_title">Приложение</string>
 
-    <string name="home_notice_content">Скачивайте Magisk только из официального репозитория на GitHub. Файлы из других источников могут содержать вредоносный код!</string>
+    <string name="home_notice_content">ВНИМАНИЕ! Вы используете неофициальную версию Magisk, которая не поддерживается официально автором Magisk. Эта версия может содержать нестабильные изменения, которые могут повредить ваше устройство или поставить под угрозу вашу безопасность. Пожалуйста, не сообщайте о проблемах и не просите помощи в официальных каналах Magisk.</string>
     <string name="home_support_title">Поддержите нас</string>
     <string name="home_follow_title">Подпишитесь</string>
     <string name="home_item_source">Исходный код</string>

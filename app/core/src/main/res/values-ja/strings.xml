@@ -20,7 +20,7 @@
     <string name="home_package">パッケージ ID </string>
     <string name="home_app_title">アプリ</string>
 
-    <string name="home_notice_content">Magisk は必ず公式の GitHub ページからダウンロードしてください。その他の提供元では悪意あるコードを含んでいる可能性があります!</string>
+    <string name="home_notice_content">警告！あなたは Magisk の非公式版を使用しており、これは Magisk 作者によって正式にサポートされていません。このバージョンには不安定な変更が含まれている可能性があり、デバイスに損害を与えたり、セキュリティを危険にさらしたりする可能性があります。問題の報告や公式 Magisk チャンネルへのヘルプ要請は行わないでください。</string>
     <string name="home_support_title">サポートする</string>
     <string name="home_follow_title">フォローする</string>
     <string name="home_item_source">ソース</string>
