@@ -20,7 +20,7 @@
     <string name="home_package">पैकेज</string>
     <string name="home_app_title">ऐप</string>
 
-    <string name="home_notice_content">मैजिस्क केवल आधिकारिक गिटहब पृष्ठ पेज से डाउनलोड करें। अज्ञात स्रोतों से फ़ाइलें दुर्भावनापूर्ण हो सकती हैं!</string>
+    <string name="home_notice_content">चेतावनी! आप Magisk का एक अनधिकृत संस्करण उपयोग कर रहे हैं जो Magisk लेखक द्वारा आधिकारिक रूप से समर्थित नहीं है। इस संस्करण में अस्थिर संशोधन हो सकते हैं जो आपके डिवाइस को नुकसान पहुंचा सकते हैं या आपकी सुरक्षा को खतरे में डाल सकते हैं। कृपया आधिकारिक Magisk चैनलों पर कोई समस्या रिपोर्ट न करें या सहायता न मांगें।</string>
     <string name="home_support_title">हमें सहयोग दीजिये</string>
     <string name="home_follow_title">अनुसरण करें</string>
     <string name="home_item_source">स्रोत</string>
