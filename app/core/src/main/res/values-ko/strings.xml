@@ -20,7 +20,7 @@
     <string name="home_package">패키지</string>
     <string name="home_app_title">앱</string>
 
-    <string name="home_notice_content">공식 Github 페이지에서 Magisk를 다운로드하십시오. 알 수 없는 소스의 파일이 악의적일 수 있습니다!</string>
+    <string name="home_notice_content">경고! Magisk 작성자가 공식적으로 지원하지 않는 비공식 버전의 Magisk를 사용하고 있습니다. 이 버전에는 기기에 손상을 주거나 보안을 위험에 빠뜨릴 수 있는 불안정한 수정 사항이 포함되어 있을 수 있습니다. 공식 Magisk 채널에 문제를 보고하거나 도움을 요청하지 마십시오.</string>
     <string name="home_support_title">후원하기</string>
     <string name="home_item_source">소스</string>
     <string name="home_support_content">Magisk는 항상 무료일 것이며, 오픈소스일 것입니다. 그러나 소액의 후원을 통해 관심을 표할 수 있습니다.</string>
