@@ -2,8 +2,8 @@
 # Magisk General Utility Functions
 ############################################
 
-MAGISK_VER='30.1-Waydroid'
-MAGISK_VER_CODE=30100
+MAGISK_VER='30.2-Waydroid'
+MAGISK_VER_CODE=30200
 
 ###################
 # Global Variables

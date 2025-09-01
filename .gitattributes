@@ -14,6 +14,7 @@
 tools/** binary
 tools/rustup-wrapper/** -binary
 tools/elf-cleaner/** -binary
+native/src/core/rezygisk/rezygisk.zip binary
 *.jar binary
 *.exe binary
 *.apk binary

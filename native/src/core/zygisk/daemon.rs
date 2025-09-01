@@ -177,26 +177,6 @@ impl MagiskD {
         };
     }
 
-    pub fn zygisk_reset(&self, mut restore: bool) {
-        if !self.zygisk_enabled.load(Ordering::Acquire) {
-            return;
-        }
-
-        if restore {
-            self.zygote_start_count.store(1, Ordering::Release);
-        } else {
-            *self.zygiskd_sockets.lock().unwrap() = (None, None);
-            if self.zygote_start_count.fetch_add(1, Ordering::AcqRel) > 3 {
-                warn!("zygote crashes too many times, rolling-back");
-                restore = true;
-            }
-        }
-
-        if restore {
-            restore_zygisk_prop();
-        }
-    }
-
     fn get_module_fds(&self, is_64_bit: bool) -> Option<Vec<RawFd>> {
         self.module_list.get().map(|module_list| {
             module_list
