@@ -16,6 +16,7 @@ use bitflags::bitflags;
 use nix::fcntl::OFlag;
 use std::io::BufReader;
 use std::os::unix::net::UnixStream;
+use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::sync::atomic::Ordering;
 
