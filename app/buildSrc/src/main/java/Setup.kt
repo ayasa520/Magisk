@@ -119,9 +119,9 @@ private fun Project.downloadFile(url: String, checksum: String): File {
 }
 
 const val BUSYBOX_DOWNLOAD_URL =
-    "https://github.com/topjohnwu/magisk-files/releases/download/files/busybox-1.36.1.1.zip"
+    "https://github.com/ayasa520/ndk-box-kitchen/releases/download/1.36.1/busybox.zip"
 const val BUSYBOX_ZIP_CHECKSUM =
-    "b4d0551feabaf314e53c79316c980e8f66432e9fb91a69dbbf10a93564b40951"
+    "cb08fe4721fbbb1ae76af9bcbaef765c94e4e2d4d44004bbfc31d4caaacbb7b4"
 
 fun Project.setupCoreLib() {
     setupCommon()
