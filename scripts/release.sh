@@ -77,7 +77,8 @@ upload() {
   fi
 
   git tag $tag
-  git push origin master
+  local current_branch=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --abbrev-ref HEAD)
+  git push origin "$current_branch"
   git push --tags
 
   # Prepare release notes
