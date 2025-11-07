@@ -12,7 +12,7 @@ pub use flags::*;
 pub const MAGISK_FULL_VER: &str = concatcp!(MAGISK_VERSION, "(", MAGISK_VER_CODE, ")");
 
 pub const APP_PACKAGE_NAME: &str = "com.topjohnwu.magisk";
-pub const RANDOM_SOCKET_NAME: &str = "d30138f2310a9fb9c54a3e0c21f58591\0";
+
 pub const LOGFILE: &str = "/cache/magisk.log";
 
 // data paths
