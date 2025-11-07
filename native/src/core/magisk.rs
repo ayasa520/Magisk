@@ -361,7 +361,7 @@ impl MagiskAction {
                 std::env::set_current_dir(magisk_tmp)?;
                 
                 cstr!(INTERNAL_DIR).mkdir(0o755)?;
-                cstr!(DEVICEDIR).mkdir(0)?;
+                cstr!(DEVICEDIR).mkdir(0o711)?;
 
                 install_applet(magisk_tmp)?;
             }
