@@ -1,8 +1,8 @@
 use super::SuInfo;
 use super::db::RootSettings;
-use crate::consts::{RANDOM_SOCKET_NAME, MAGISK_FILE_CON};
+use crate::consts::{INTERNAL_DIR, MAGISK_FILE_CON};
 use crate::daemon::to_user_id;
-use crate::ffi::{SuPolicy, SuRequest};
+use crate::ffi::{SuPolicy, SuRequest, get_magisk_tmp};
 use crate::socket::IpcRead;
 use ExtraVal::{Bool, Int, IntList, Str};
 use base::{
@@ -164,8 +164,9 @@ impl SuAppContext<'_> {
     fn app_request(&mut self) {
         let mut fifo = cstr::buf::new::<64>();
         fifo.write_fmt(format_args!(
-            "/dev/magisk:su_request:{}:{}",
-            RANDOM_SOCKET_NAME.trim_end_matches('\0'),
+            "{}/{}/su_request_{}",
+            get_magisk_tmp(),
+            INTERNAL_DIR,
             self.cred.pid.unwrap_or(-1)
         ))
         .ok();
