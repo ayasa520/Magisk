@@ -8,9 +8,7 @@ use std::os::fd::RawFd;
 #[unsafe(no_mangle)]
 extern "C" fn exec_companion_entry(client: RawFd, companion_handler: extern "C" fn(RawFd)) {
     ThreadPool::exec_task(move || {
-        let Ok(s1) = fd_get_attr(client) else {
-            return;
-        };
+        let s1 = fd_get_attr(client).ok();
 
         companion_handler(client);
 
@@ -18,7 +16,8 @@ extern "C" fn exec_companion_entry(client: RawFd, companion_handler: extern "C" 
         // accidentally close a re-used file descriptor.
         // This check is required because the module companion
         // handler could've closed the file descriptor already.
-        if let Ok(s2) = fd_get_attr(client)
+        if let Some(s1) = s1
+            && let Ok(s2) = fd_get_attr(client)
             && s1.st.st_dev == s2.st.st_dev
             && s1.st.st_ino == s2.st.st_ino
         {
