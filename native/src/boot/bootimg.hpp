@@ -437,9 +437,11 @@ private:
 #define __impl_cls(name, hdr)           \
 protected: name() = default;            \
 public:                                 \
-name(const void *ptr) {                 \
-    raw = malloc(sizeof(hdr));          \
-    memcpy(raw, ptr, sizeof(hdr));      \
+explicit                                \
+name(const void *p, ssize_t sz = -1) {  \
+    if (sz < 0) sz = sizeof(hdr);       \
+    raw = calloc(sizeof(hdr), 1);       \
+    memcpy(raw, p, sz);                 \
 }                                       \
 size_t hdr_size() const override {      \
     return sizeof(hdr);                 \
@@ -613,7 +615,7 @@ struct boot_img {
     const mmap_data map;
 
     // Android image header
-    const dyn_img_hdr *hdr = nullptr;
+    dyn_img_hdr *hdr = nullptr;
 
     // Flags to indicate the state of current boot image
     std::bitset<BOOT_FLAGS_MAX> flags;
@@ -645,16 +647,16 @@ struct boot_img {
 
     // The pointers/values after parse_image
     // +---------------+
-    // | z_hdr         | z_info.hdr_sz
+    // | z_info.hdr    | z_info.hdr_sz
     // +---------------+
     // | kernel        | hdr->kernel_size()
     // +---------------+
-    // | z_info.tail   | z_info.tail.sz()
+    // | z_info.tail   |
     // +---------------+
-    const zimage_hdr *z_hdr = nullptr;
     struct {
-        uint32_t hdr_sz;
-        byte_view tail;
+        const zimage_hdr *hdr = nullptr;
+        uint32_t hdr_sz = 0;
+        byte_view tail{};
     } z_info;
 
     // AVB structs
@@ -675,14 +677,13 @@ struct boot_img {
     // dtb embedded in kernel
     byte_view kernel_dtb;
 
-    // Blocks defined in header but we do not care
-    byte_view ignore;
-
-    boot_img(const char *);
+    explicit boot_img(const char *);
     ~boot_img();
 
     bool parse_image(const uint8_t *addr, FileFormat type);
-    std::pair<const uint8_t *, dyn_img_hdr *> create_hdr(const uint8_t *addr, FileFormat type);
+    void parse_zimage();
+    const uint8_t *parse_hdr(const uint8_t *addr, FileFormat type);
+    std::span<const vendor_ramdisk_table_entry_v4> vendor_ramdisk_tbl() const;
 
     // Rust FFI
     static std::unique_ptr<boot_img> create(Utf8CStr name) { return std::make_unique<boot_img>(name.c_str()); }

@@ -77,8 +77,8 @@ impl MagiskD {
         let tmp_bb = buf.append_path(get_magisk_tmp()).append_path(BBPATH);
         tmp_bb.mkdirs(0o755).ok();
         tmp_bb.append_path("busybox");
-        tmp_bb.follow_link().chmod(0o755).ok();
         busybox.copy_to(tmp_bb).ok();
+        tmp_bb.follow_link().chmod(0o755).log_ok();
 
         // Install busybox applets
         Command::new(&tmp_bb)
@@ -195,7 +195,9 @@ impl MagiskD {
 
         setup_preinit_dir();
         self.ensure_manager();
-        self.zygisk.lock().unwrap().reset(true);
+        if self.zygisk_enabled.load(Ordering::Relaxed) {
+            self.zygisk.lock().unwrap().reset(true);
+        }
 
         if is_rezygisk() {
             self.set_db_setting(DbEntryKey::ZygiskConfig, 1).log_ok();

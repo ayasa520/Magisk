@@ -1,17 +1,15 @@
 use base::{FileOrStd, LibcReturn, LoggedResult, OsResult, ResultExt, libc, warn};
 use libc::{STDIN_FILENO, TIOCGWINSZ, TIOCSWINSZ, c_int, winsize};
-use nix::{
-    fcntl::{OFlag, SpliceFFlags},
-    poll::{PollFd, PollFlags, PollTimeout, poll},
-    sys::signal::{SigSet, Signal, raise},
-    sys::signalfd::{SfdFlags, SignalFd},
-    sys::termios::{SetArg, Termios, cfmakeraw, tcgetattr, tcsetattr},
-    unistd::pipe2,
-};
+use nix::fcntl::{OFlag, SpliceFFlags};
+use nix::poll::{PollFd, PollFlags, PollTimeout, poll};
+use nix::sys::signal::{SigSet, Signal, raise};
+use nix::sys::signalfd::{SfdFlags, SignalFd};
+use nix::sys::termios::{SetArg, Termios, cfmakeraw, tcgetattr, tcsetattr};
+use nix::unistd::pipe2;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::mem::MaybeUninit;
-use std::os::fd::{AsFd, AsRawFd, FromRawFd, OwnedFd, RawFd};
+use std::os::fd::{AsFd, AsRawFd, FromRawFd, RawFd};
 use std::sync::atomic::{AtomicBool, Ordering};
 
 static SHOULD_USE_SPLICE: AtomicBool = AtomicBool::new(true);
@@ -50,21 +48,25 @@ fn pump_via_copy(mut fd_in: &File, mut fd_out: &File) -> LoggedResult<()> {
     Ok(())
 }
 
-fn pump_via_splice(fd_in: &File, fd_out: &File, pipe: &(OwnedFd, OwnedFd)) -> LoggedResult<()> {
-    if !SHOULD_USE_SPLICE.load(Ordering::Acquire) {
+fn pump_via_splice(fd_in: &File, fd_out: &File, pipe: &(File, File)) -> LoggedResult<()> {
+    if !SHOULD_USE_SPLICE.load(Ordering::Relaxed) {
         return pump_via_copy(fd_in, fd_out);
     }
 
     // The pipe capacity is by default 16 pages, let's just use 65536
     let Ok(len) = splice(fd_in, &pipe.1, 65536) else {
         // If splice failed, stop using splice and fallback to userspace copy
-        SHOULD_USE_SPLICE.store(false, Ordering::Release);
+        SHOULD_USE_SPLICE.store(false, Ordering::Relaxed);
         return pump_via_copy(fd_in, fd_out);
     };
     if len == 0 {
         return Ok(());
     }
-    splice(&pipe.0, fd_out, len)?;
+    if splice(&pipe.0, fd_out, len).is_err() {
+        // If splice failed, stop using splice and fallback to userspace copy
+        SHOULD_USE_SPLICE.store(false, Ordering::Relaxed);
+        return pump_via_copy(&pipe.0, fd_out);
+    }
     Ok(())
 }
 
@@ -128,6 +130,7 @@ fn pump_tty_impl(ptmx: File, pump_stdin: bool) -> LoggedResult<()> {
 
     // Open a pipe to bypass userspace copy with splice
     let pipe_fd = pipe2(OFlag::O_CLOEXEC).into_os_result("pipe2", None, None)?;
+    let pipe_fd = (File::from(pipe_fd.0), File::from(pipe_fd.1));
 
     'poll: loop {
         // Wait for event

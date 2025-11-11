@@ -1,17 +1,16 @@
 use crate::consts::{LOG_PIPE, LOGFILE};
 use crate::ffi::get_magisk_tmp;
 use crate::logging::LogFile::{Actual, Buffer};
+use base::const_format::concatcp;
 use base::{
-    FsPathBuilder, LogLevel, LoggedResult, ReadExt, Utf8CStr, Utf8CStrBuf, WriteExt,
-    const_format::concatcp, cstr, libc, new_daemon_thread, raw_cstr, update_logger,
+    FsPathBuilder, LogLevel, LoggedResult, ReadExt, ResultExt, Utf8CStr, Utf8CStrBuf, WriteExt,
+    cstr, libc, new_daemon_thread, raw_cstr, update_logger,
 };
 use bytemuck::{Pod, Zeroable, bytes_of, write_zeroes};
 use libc::{PIPE_BUF, c_char, localtime_r, sigtimedwait, time_t, timespec, tm};
-use nix::{
-    fcntl::OFlag,
-    sys::signal::{SigSet, SigmaskHow, Signal},
-    unistd::{Gid, Uid, chown, getpid, gettid},
-};
+use nix::fcntl::OFlag;
+use nix::sys::signal::{SigSet, SigmaskHow, Signal};
+use nix::unistd::{Gid, Uid, chown, getpid, gettid};
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::FromPrimitive;
 use std::cmp::min;
@@ -328,7 +327,7 @@ pub fn start_log_daemon() {
     }
 
     let _: LoggedResult<()> = try {
-        path.mkfifo(0o666)?;
+        path.mkfifo(0o666).log_ok();
         chown(path.as_utf8_cstr(), Some(Uid::from(0)), Some(Gid::from(0)))?;
         let read = path.open(OFlag::O_RDWR | OFlag::O_CLOEXEC)?;
         let write = path.open(OFlag::O_WRONLY | OFlag::O_CLOEXEC)?;
