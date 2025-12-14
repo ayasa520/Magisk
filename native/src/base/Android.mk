@@ -14,6 +14,5 @@ LOCAL_STATIC_LIBRARIES := libcxx
 LOCAL_SRC_FILES := \
     base.cpp \
     base-rs.cpp \
-    cus.cpp \
     ../external/cxx-rs/src/cxx.cc
 include $(BUILD_STATIC_LIBRARY)

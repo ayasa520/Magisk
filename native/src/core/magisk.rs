@@ -1,11 +1,11 @@
 use crate::consts::{APPLET_NAMES, DEVICEDIR, INTERNAL_DIR, MAGISK_PROC_CON, MAGISK_VER_CODE, MAGISK_VERSION, POST_FS_DATA_WAIT_TIME};
 use crate::daemon::connect_daemon;
-use crate::ffi::{RequestCode, denylist_cli, get_magisk_tmp, install_module, mount_sbin, tmpfs_mount, unlock_blocks};
+use crate::ffi::{RequestCode, denylist_cli, get_magisk_tmp, install_module, mount_sbin, unlock_blocks};
 use crate::mount::find_preinit_device;
 use crate::selinux::restorecon;
 use crate::socket::{Decodable, Encodable};
 use argh::FromArgs;
-use base::{CmdArgs, EarlyExitExt, LoggedResult, Utf8CString, argh, clone_attr, cstr};
+use base::{CmdArgs, EarlyExitExt, LoggedResult, ResultExt, Utf8CString, argh, clone_attr, cstr};
 use nix::poll::{PollFd, PollFlags, PollTimeout};
 use std::ffi::c_char;
 use std::fs;
@@ -342,7 +342,7 @@ impl MagiskAction {
                     }
                 } else {
                     let magisk_tmp_ref = target_dir.as_ref().unwrap();
-                    if tmpfs_mount(cstr!("magisk"), magisk_tmp_ref) != 0 {
+                    if cstr!("magisk").tmpfs_mount(magisk_tmp_ref).log().is_err() {
                         return Ok(-1);
                     }
                 }

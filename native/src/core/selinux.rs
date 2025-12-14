@@ -10,7 +10,7 @@ const SYSTEM_CON: &Utf8CStr = cstr!("u:object_r:system_file:s0");
 const ADB_CON: &Utf8CStr = cstr!("u:object_r:adb_data_file:s0");
 const ROOT_CON: &Utf8CStr = cstr!("u:object_r:rootfs:s0");
 
-fn selinux_enabled() -> bool {
+pub(crate) fn selinux_enabled() -> bool {
     unsafe { libc::access(cstr!("/sys/fs/selinux/enforce").as_ptr(), F_OK) == 0 }
 }
 

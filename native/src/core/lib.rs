@@ -17,7 +17,7 @@ use logging::{android_logging, zygisk_close_logd, zygisk_get_logd, zygisk_loggin
 use magisk::magisk_main;
 use mount::revert_unmount;
 use resetprop::{get_prop, resetprop_main};
-use selinux::{lgetfilecon, setfilecon};
+use selinux::{lgetfilecon, setfilecon, selinux_enabled};
 use socket::{recv_fd, recv_fds, send_fd};
 use std::fs::File;
 use std::mem::ManuallyDrop;
@@ -152,7 +152,6 @@ pub mod ffi {
         fn check_key_combo() -> bool;
         fn unlock_blocks();
         fn mount_sbin() -> i32;
-        fn tmpfs_mount(from: Utf8CStrRef, to: Utf8CStrRef) -> i32;
         fn update_deny_flags(uid: i32, process: &str, flags: &mut u32);
         fn initialize_denylist();
         fn switch_mnt_ns(pid: i32) -> i32;
@@ -199,6 +198,7 @@ pub mod ffi {
         fn write_to_fd(self: &SuRequest, fd: i32);
         fn pump_tty(ptmx: i32, pump_stdin: bool);
         fn get_pty_num(fd: i32) -> i32;
+        fn selinux_enabled() -> bool;
         fn lgetfilecon(path: Utf8CStrRef, con: &mut [u8]) -> bool;
         fn setfilecon(path: Utf8CStrRef, con: Utf8CStrRef) -> bool;
 

@@ -40,15 +40,6 @@ bool is_rootfs()
     }
 }
 
-static bool system_lnk(const char *path){
-    char buff[4098];
-    ssize_t len = readlink(path, buff, sizeof(buff)-1);
-    if (len != -1) {
-        return true;
-    }
-    return false;
-}
-
 void recreate_sbin_v2(const char *mirror, bool use_bind_mount) {
     auto dp = xopen_dir(mirror);
     int src = dirfd(dp.get());
@@ -106,9 +97,4 @@ int mount_sbin() {
         umount2("/sbin/" MIRRDIR "/system_root", MNT_DETACH);
     }
     return 0;
-}
-
-static void lazy_unmount(const char* mountpoint) {
-    if (umount2(mountpoint, MNT_DETACH) != -1)
-        LOGD("denylist: Unmounted (%s)\n", mountpoint);
 }

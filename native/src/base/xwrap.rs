@@ -36,21 +36,6 @@ unsafe extern "C" fn xrealpath(path: *const c_char, buf: *mut u8, bufsz: usize) 
 }
 
 #[unsafe(no_mangle)]
-unsafe extern "C" fn xreadlink(path: *const c_char, buf: *mut u8, bufsz: usize) -> isize {
-    unsafe {
-        match Utf8CStr::from_ptr(path) {
-            Ok(path) => {
-                let mut buf = cstr::buf::wrap_ptr(buf, bufsz);
-                path.read_link(&mut buf)
-                    .log()
-                    .map_or(-1, |_| buf.len() as isize)
-            }
-            Err(_) => -1,
-        }
-    }
-}
-
-#[unsafe(no_mangle)]
 unsafe extern "C" fn xreadlinkat(
     dirfd: RawFd,
     path: *const c_char,
@@ -202,16 +187,6 @@ extern "C" fn xsetsid() -> i32 {
 }
 
 #[unsafe(no_mangle)]
-unsafe extern "C" fn xstat(path: *const c_char, buf: *mut libc::stat) -> i32 {
-    unsafe {
-        libc::stat(path, buf)
-            .into_os_result("stat", ptr_to_str(path), None)
-            .log()
-            .unwrap_or(-1)
-    }
-}
-
-#[unsafe(no_mangle)]
 unsafe extern "C" fn xfstat(fd: RawFd, buf: *mut libc::stat) -> i32 {
     unsafe {
         libc::fstat(fd, buf)
@@ -254,6 +229,32 @@ unsafe extern "C" fn xmount(
             .into_os_result("mount", ptr_to_str(src), ptr_to_str(target))
             .log()
             .unwrap_or(-1)
+    }
+}
+
+#[unsafe(no_mangle)]
+unsafe extern "C" fn bind_mount_(src: *const c_char, target: *const c_char) -> i32 {
+    unsafe {
+        match Utf8CStr::from_ptr(src) {
+            Ok(src) => match Utf8CStr::from_ptr(target) {
+                Ok(target) => src.bind_mount_to(target, false).log().map_or(-1, |_| 0),
+                Err(_) => -1,
+            },
+            Err(_) => -1,
+        }
+    }
+}
+
+#[unsafe(no_mangle)]
+unsafe extern "C" fn tmpfs_mount(src: *const c_char, target: *const c_char) -> i32 {
+    unsafe {
+        match Utf8CStr::from_ptr(src) {
+            Ok(src) => match Utf8CStr::from_ptr(target) {
+                Ok(target) => src.tmpfs_mount(target).log().map_or(-1, |_| 0),
+                Err(_) => -1,
+            },
+            Err(_) => -1,
+        }
     }
 }
 

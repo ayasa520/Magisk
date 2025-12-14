@@ -2,6 +2,18 @@ use crate::{LibcReturn, OsResult, Utf8CStr};
 use nix::mount::{MntFlags, MsFlags, mount, umount2};
 
 impl Utf8CStr {
+    pub fn tmpfs_mount<'a>(&'a self, to: &'a Utf8CStr) -> OsResult<'a, ()> {
+        mount(
+            Some(self),
+            to,
+            Some(crate::cstr!("tmpfs")),
+            MsFlags::empty(),
+            Some(crate::cstr!("mode=755")),
+        )
+        .check_os_err("tmpfs_mount", Some(self), Some(to))?;
+        Ok(())
+    }
+
     pub fn bind_mount_to<'a>(&'a self, path: &'a Utf8CStr, rec: bool) -> OsResult<'a, ()> {
         let flag = if rec {
             MsFlags::MS_REC

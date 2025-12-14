@@ -86,7 +86,6 @@ void exec_root_shell(int client, int pid, SuRequest &req, MntNsMode mode);
 
 // Mount operations
 int mount_sbin();
-int tmpfs_mount(Utf8CStr from, Utf8CStr to);
 
 // Rust bindings
 inline Utf8CStr get_magisk_tmp_rs() { return get_magisk_tmp(); }
