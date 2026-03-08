@@ -74,19 +74,19 @@ struct Exists {
 #[derive(FromArgs)]
 #[argh(subcommand, name = "backup")]
 struct Backup {
-    #[argh(positional, arg_name = "orig")]
-    origin: String,
     #[argh(switch, short = 'n')]
     skip_compress: bool,
+    #[argh(positional, arg_name = "orig")]
+    origin: String,
 }
 
 #[derive(FromArgs)]
 #[argh(subcommand, name = "rm")]
 struct Remove {
-    #[argh(positional, arg_name = "entry")]
-    path: String,
     #[argh(switch, short = 'r')]
     recursive: bool,
+    #[argh(positional, arg_name = "entry")]
+    path: String,
 }
 
 #[derive(FromArgs)]
@@ -137,10 +137,10 @@ struct Add {
 #[derive(FromArgs)]
 #[argh(subcommand, name = "ls")]
 struct List {
-    #[argh(positional, default = r#"String::from("/")"#)]
-    path: String,
     #[argh(switch, short = 'r')]
     recursive: bool,
+    #[argh(positional, default = r#"String::from("/")"#)]
+    path: String,
 }
 
 pub(crate) fn print_cpio_usage() {
@@ -699,11 +699,11 @@ impl CpioEntry {
         if self.mode & S_IFMT != S_IFREG {
             return false;
         }
-        let Ok(data): std::io::Result<Vec<u8>> = (try {
+        let Ok(data) = || -> std::io::Result<Vec<u8>> {
             let mut encoder = get_encoder(FileFormat::XZ, Vec::new())?;
             encoder.write_all(&self.data)?;
-            encoder.finish()?
-        }) else {
+            encoder.finish()
+        }() else {
             eprintln!("xz compression failed");
             return false;
         };
@@ -717,12 +717,12 @@ impl CpioEntry {
             return false;
         }
 
-        let Ok(data): std::io::Result<Vec<u8>> = (try {
+        let Ok(data) = || -> std::io::Result<Vec<u8>> {
             let mut decoder = get_decoder(FileFormat::XZ, Cursor::new(&self.data))?;
             let mut data = Vec::new();
             std::io::copy(decoder.as_mut(), &mut data)?;
-            data
-        }) else {
+            Ok(data)
+        }() else {
             eprintln!("xz compression failed");
             return false;
         };
