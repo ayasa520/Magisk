@@ -68,6 +68,18 @@ impl MagiskD {
         restorecon();
 
         let busybox = cstr!(concatcp!(DATABIN, "/busybox"));
+
+        // In direct-system-install mode, busybox may be in magisk_tmp (placed by
+        // --setup-sbin) but not yet in DATABIN. Copy it over before the check.
+        if !busybox.exists() {
+            let mut tmp = cstr::buf::default();
+            tmp.append_path(get_magisk_tmp())
+                .append_path("busybox");
+            if tmp.exists() {
+                tmp.copy_to(busybox).log_ok();
+            }
+        }
+
         if !busybox.exists() {
             return false;
         }

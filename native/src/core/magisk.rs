@@ -347,7 +347,7 @@ impl MagiskAction {
                     }
                 }
                 
-                let bins = ["magisk", "magisk32", "magiskpolicy", "stub.apk"];
+                let bins = ["magisk", "magisk32", "magiskpolicy", "stub.apk", "busybox"];
                 for bin in &bins {
                     let src = Utf8CString::from(format!("{}/{}", source_dir, bin));
                     let dest = Utf8CString::from(format!("{}/{}", magisk_tmp, bin));
