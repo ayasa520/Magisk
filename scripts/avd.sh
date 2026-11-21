@@ -4,35 +4,21 @@ set -e
 shopt -s extglob
 . scripts/test_common.sh
 
+emu="$ANDROID_HOME/emulator/emulator"
+avd="$cmdline_tools/bin/avdmanager"
+
 emu_args_base="-no-window -no-audio -no-boot-anim -gpu software -read-only -no-snapshot -cores $core_count"
 log_args="-show-kernel -logcat '' -logcat-output logcat.log"
+avd_name='magisk_avd'
 emu_args=
 
 atd_min_api=30
 atd_max_api=36
 huge_ram_min_api=26
 
-case $(uname -m) in
-  'arm64'|'aarch64')
-    if [ -n "$FORCE_32_BIT" ]; then
-      echo "! ARM32 is not supported"
-      exit 1
-    fi
-    arch=arm64-v8a
-    ;;
-  *)
-    if [ -n "$FORCE_32_BIT" ]; then
-      arch=x86
-    else
-      arch=x86_64
-    fi
-
-    ;;
-esac
-
 cleanup() {
   rm -f magisk-*.img
-  "$avd" delete avd -n test > /dev/null 2>&1
+  "$avd" delete avd -n $avd_name > /dev/null 2>&1
 }
 
 test_error() {
@@ -45,17 +31,34 @@ test_error() {
 }
 
 wait_for_boot() {
-  set -e
-  adb wait-for-device
-  while true; do
-    local result="$(adb exec-out getprop sys.boot_completed)"
-    if [ $? -ne 0 ]; then
-      exit 1
-    elif [ "$result" = "1" ]; then
-      break
+  local trace=false
+  if [[ $- == *x* ]]; then
+    trace=true
+    set +x
+  fi
+
+  local emu_pid=$1
+  local elapsed=0
+
+  while [ $elapsed -lt $boot_timeout ]; do
+    if [ -n "$emu_pid" ] && ! kill -0 "$emu_pid" 2>/dev/null; then
+      $trace && set -x
+      print_error "! Emulator process died unexpectedly"
+      return 1
+    fi
+    local result
+    result="$(adb exec-out getprop sys.boot_completed 2>/dev/null || true)"
+    if [ "$result" = "1" ]; then
+      $trace && set -x
+      return 0
     fi
     sleep 2
+    elapsed=$((elapsed + 2))
   done
+
+  $trace && set -x
+  print_error "! Timed out waiting for emulator to boot (${boot_timeout}s)"
+  return 1
 }
 
 dump_vars() {
@@ -64,6 +67,16 @@ dump_vars() {
     eval val=\$$name
     echo local $name=\"$val\"\;
   done
+  # Always export AVD_TEST_LOG
+  echo export AVD_TEST_LOG=\"$AVD_TEST_LOG\";
+}
+
+pkg_to_path() {
+  echo "${1//;/\/}"
+}
+
+path_to_pkg() {
+  echo "${1////;}"
 }
 
 parse_args() {
@@ -73,8 +86,10 @@ parse_args() {
 
   local ver=
   local type=
+  local arch=
+  OPTIND=1
 
-  while getopts ":v:t:l" opt; do
+  while getopts ":v:t:a:l" opt; do
     case $opt in
       v )
         ver="$OPTARG"
@@ -82,8 +97,11 @@ parse_args() {
       t )
         type="$OPTARG"
         ;;
+      a )
+        arch="$OPTARG"
+        ;;
       l )
-        export AVD_TEST_LOG=1
+        AVD_TEST_LOG=1
         ;;
       \? )
         echo "Error: Invalid option: -$OPTARG" 1>&2
@@ -100,10 +118,22 @@ parse_args() {
     exit 1
   fi
 
+  # Determine default arch
+  if [ -z "$arch" ]; then
+    case $(uname -m) in
+      'arm64'|'aarch64')
+        arch=arm64-v8a
+        ;;
+      *)
+        arch=x86_64
+        ;;
+    esac
+  fi
+
   # Determine API level
   local api
   case $ver in
-    +([0-9\.])) api=$ver ;;
+    +([0-9])?(\.+([0-9]))*) api="${ver%%[^0-9.]*}";;
     TiramisuPrivacySandbox) api=33 ;;
     UpsideDownCakePrivacySandbox) api=34 ;;
     VanillaIceCream) api=35 ;;
@@ -140,9 +170,8 @@ parse_args() {
   emu_args="$emu_args_base -memory $memory"
 
   # System image variable and paths
-  local avd_pkg="system-images;android-$ver;$type;$arch"
-  local sys_img_dir="$ANDROID_HOME/system-images/android-$ver/$type/$arch"
-  local ramdisk="$sys_img_dir/ramdisk.img"
+  local avd_pkg="system-images/android-$ver/$type/$arch"
+  local ramdisk="$ANDROID_HOME/$avd_pkg/ramdisk.img"
 
   # Dump global variables
   echo emu_args=\"$emu_args\"
@@ -154,20 +183,15 @@ parse_args() {
 
 dl_emu() {
   local avd_pkg=$1
-  yes | "$sdk" --licenses > /dev/null 2>&1
-  "$sdk" --channel=3 'cmdline-tools;latest' platform-tools emulator "$avd_pkg"
-  # It's possible cmdline-tools updated
-  if [ -e "${cli_tools}-2" ]; then
-    rm -rf "$cli_tools"
-    mv "${cli_tools}-2" "$cli_tools"
-  fi
+  ensure_android_cli
+  "$android" sdk install --canary platform-tools emulator "$avd_pkg"
 }
 
 setup_emu() {
   local avd_pkg=$1
   local ver=$2
   dl_emu $avd_pkg
-  echo no | "$avd" create avd -f -n test -k $avd_pkg
+  echo no | "$avd" create avd -f -n $avd_name -k "$(path_to_pkg "$1")"
 }
 
 test_emu() {
@@ -178,16 +202,17 @@ test_emu() {
 
   if [ -n "$AVD_TEST_LOG" ]; then
     rm -f logcat.log
-    "$emu" @test $emu_args $log_args $magisk_args > kernel.log 2>&1 &
+    "$emu" "@${avd_name}" $emu_args $log_args $magisk_args > kernel.log 2>&1 &
   else
-    "$emu" @test $emu_args $magisk_args > /dev/null 2>&1 &
+    "$emu" "@${avd_name}" $emu_args $magisk_args > /dev/null 2>&1 &
   fi
-  timeout $boot_timeout bash -c wait_for_boot
+  local emu_pid=$!
+  wait_for_boot $emu_pid
 
   run_setup $apk
 
   adb reboot
-  timeout $boot_timeout bash -c wait_for_boot
+  wait_for_boot $emu_pid
 
   run_tests
 
@@ -217,14 +242,14 @@ test_main() {
 
   # Launch stock emulator
   print_title "* Launching $avd_pkg"
-  "$emu" @test $emu_args > /dev/null 2>&1 &
-  timeout $boot_timeout bash -c wait_for_boot
+  "$emu" "@${avd_name}" $emu_args > /dev/null 2>&1 &
+  wait_for_boot $!
 
   # Patch images
   local images=()
   for apk in "${apks[@]}"; do
     images+=("magisk-$(basename $apk .apk).img")
-    ./build.py -v avd_patch --apk "$apk" "$ramdisk" "${images[-1]}"
+    ./build.py -v patch --avd --apk "$apk" "$ramdisk" "${images[-1]}"
   done
 
   adb emu kill
@@ -245,8 +270,17 @@ run_main() {
 
   setup_emu "$avd_pkg" $ver
   print_title "* Launching $avd_pkg"
-  "$emu" @test $emu_args > /dev/null 2>&1 &
-  wait_for_boot
+  local emu_log=$(mktemp)
+  "$emu" "@${avd_name}" $emu_args > "$emu_log" 2>&1 &
+  local emu_pid=$!
+
+  if ! wait_for_boot "$emu_pid"; then
+    echo "--- Emulator Output ---"
+    cat "$emu_log"
+    rm -f "$emu_log"
+    exit 1
+  fi
+  rm -f "$emu_log"
   cleanup
 }
 
@@ -259,13 +293,57 @@ dl_main() {
   dl_emu "$avd_pkg"
 }
 
+live_test_main() {
+  local apks=($(print_apks "$@"))
+  for apk in "${apks[@]}"; do
+    # Cleanup
+    adb shell pm uninstall com.topjohnwu.magisk || true
+    adb shell /system/xbin/su 0 rm -rf /data/adb/modules
+
+    # "Install" Magisk
+    ./build.py -v emulator $apk
+    wait_for_boot
+
+    run_setup $apk
+
+    # Trigger Magisk soft reboot
+    ./build.py -v emulator $apk
+    wait_for_boot
+
+    run_tests
+  done
+}
+
+app_test_main() {
+  local apks=($(print_apks "$@"))
+  local pkg='com.topjohnwu.magisk.test'
+  local app="$pkg/$pkg.AppTestRunner"
+  for apk in "${apks[@]}"; do
+    # Cleanup
+    adb shell pm uninstall com.topjohnwu.magisk || true
+    adb install --user current -r -g $apk
+    adb install --user current -r -g out/test.apk
+    am_instrument '.AppTest' $app
+  done
+}
+
+
 case "$1" in
   test )
     shift
     trap test_error EXIT
-    export -f wait_for_boot
     set -x
     test_main "$@"
+    ;;
+  live-test )
+    shift
+    set -x
+    live_test_main "$@"
+    ;;
+  app-test )
+    shift
+    set -x
+    app_test_main "$@"
     ;;
   run )
     shift

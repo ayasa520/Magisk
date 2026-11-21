@@ -1,5 +1,6 @@
-use crate::consts::{APP_PACKAGE_NAME, BBPATH, DATABIN, MODULEROOT, SECURE_DIR};
+use crate::consts::{APP_DATA_DIR, APP_PACKAGE_NAME, BBPATH, DATABIN, MODULEROOT, SECURE_DIR};
 use crate::daemon::MagiskD;
+use crate::db::MultiuserMode;
 use crate::ffi::{
     DbEntryKey, RequestCode, check_key_combo, exec_common_scripts, exec_module_scripts,
     get_magisk_tmp, initialize_denylist,
@@ -10,7 +11,7 @@ use crate::mount::{clean_mounts, setup_preinit_dir};
 use crate::resetprop::get_prop;
 use crate::selinux::restorecon;
 use base::const_format::concatcp;
-use base::{BufReadExt, FsPathBuilder, ResultExt, cstr, error, info};
+use base::{BufReadExt, FsPathBuilder, ResultExt, Utf8CStrBuf, cstr, error, info};
 use bitflags::bitflags;
 use nix::fcntl::OFlag;
 use std::io::BufReader;
@@ -34,17 +35,22 @@ impl MagiskD {
 
         let mut buf = cstr::buf::default();
 
-        let app_bin_dir = buf
-            .append_path(self.app_data_dir())
-            .append_path("0")
-            .append_path(APP_PACKAGE_NAME)
-            .append_path("install");
+        for user in self.get_users() {
+            buf.clear();
+            buf.append_path(APP_DATA_DIR)
+                .append_path_fmt(user)
+                .append_path(APP_PACKAGE_NAME)
+                .append_path("install");
+            if buf.exists() {
+                break;
+            }
+        }
 
         // Alternative binaries paths
-        let alt_bin_dirs = &[
+        let alt_bin_dirs = [
             cstr!("/cache/data_adb/magisk"),
             cstr!("/data/magisk"),
-            app_bin_dir,
+            &buf,
         ];
         for dir in alt_bin_dirs {
             if dir.exists() {
@@ -110,20 +116,18 @@ impl MagiskD {
         setup_logfile();
         info!("** post-fs-data mode running");
 
-        self.preserve_stub_apk();
-
         // Check secure dir
-        let secure_dir = cstr!(SECURE_DIR);
-        if !secure_dir.exists() {
-            if self.sdk_int < 24 {
-                secure_dir.mkdir(0o700).log_ok();
-            } else {
-                error!("* {} is not present, abort", SECURE_DIR);
-                return true;
-            }
+        if !cstr!(SECURE_DIR).exists() {
+            error!("* {} is not present, abort", SECURE_DIR);
+            return true;
         }
 
         self.prune_su_access();
+
+        if self.is_headless {
+            self.set_db_setting(DbEntryKey::SuMultiuserMode, MultiuserMode::User as i32)
+                .log_ok();
+        }
 
         if !self.setup_magisk_env() {
             error!("* Magisk environment incomplete, abort");
@@ -174,17 +178,20 @@ impl MagiskD {
         setup_logfile();
         info!("** boot-complete triggered");
 
-        // Reset the bootloop counter once we have boot-complete
-        self.set_db_setting(DbEntryKey::BootloopCount, 0).log_ok();
-
         // At this point it's safe to create the folder
         let secure_dir = cstr!(SECURE_DIR);
         if !secure_dir.exists() {
             secure_dir.mkdir(0o700).log_ok();
         }
 
+        // Reset the bootloop counter once we have boot-complete
+        self.set_db_setting(DbEntryKey::BootloopCount, 0).log_ok();
+        if self.is_headless {
+            self.set_db_setting(DbEntryKey::SuMultiuserMode, MultiuserMode::User as i32)
+                .log_ok();
+        }
+
         setup_preinit_dir();
-        self.ensure_manager();
         if self.zygisk_enabled.load(Ordering::Relaxed) {
             self.zygisk.lock().reset(true);
         }
@@ -195,13 +202,13 @@ impl MagiskD {
         let mut state = self.boot_stage_lock.lock();
 
         match code {
-            RequestCode::POST_FS_DATA => {
-                if check_data() && !state.contains(BootState::PostFsDataDone) {
-                    if self.post_fs_data() {
-                        state.insert(BootState::SafeMode);
-                    }
-                    state.insert(BootState::PostFsDataDone);
+            RequestCode::POST_FS_DATA
+                if check_data() && !state.contains(BootState::PostFsDataDone) =>
+            {
+                if self.post_fs_data() {
+                    state.insert(BootState::SafeMode);
                 }
+                state.insert(BootState::PostFsDataDone);
             }
             RequestCode::LATE_START => {
                 drop(client);

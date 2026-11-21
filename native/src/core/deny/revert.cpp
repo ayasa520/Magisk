@@ -65,7 +65,7 @@ void recreate_sbin_v2(const char *mirror, bool use_bind_mount) {
                 else
                     close(xopen(sbin_path.data(), O_CREAT | O_WRONLY | O_CLOEXEC, mode));
 
-                bind_mount_(buf, sbin_path.data());
+                xmount(buf, sbin_path.data(), nullptr, MS_BIND, nullptr);
             } else {
                 xsymlink(buf, sbin_path.data());
                 VLOGD("create", buf, sbin_path.data());
@@ -82,12 +82,12 @@ int mount_sbin() {
         mkdir("/root", 0750);
         clone_attr("/sbin", "/root");
         link_path("/sbin", "/root");
-        if (tmpfs_mount("magisk", "/sbin") != 0) return -1;
+        if (xmount("magisk", "/sbin", "tmpfs", 0, "mode=755") != 0) return -1;
         setfilecon("/sbin", "u:object_r:rootfs:s0");
         recreate_sbin_v2("/root", false);
         xmount(nullptr, "/", nullptr, MS_REMOUNT | MS_RDONLY, nullptr);
     } else {
-        if (tmpfs_mount("magisk", "/sbin") != 0) return -1;
+        if (xmount("magisk", "/sbin", "tmpfs", 0, "mode=755") != 0) return -1;
         setfilecon("/sbin", "u:object_r:rootfs:s0");
         xmkdir("/sbin/" INTLROOT, 0755);
         xmkdir("/sbin/" MIRRDIR, 0755);

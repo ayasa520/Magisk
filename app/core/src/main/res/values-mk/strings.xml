@@ -47,8 +47,6 @@
     <string name="install_inactive_slot">Инсталирај во неактивен слот (по ОТА)</string>
     <string name="install_inactive_slot_msg">Вашиот уред ќе биде ПРИНУДЕН да се подигне на тековниот неактивен слот по рестартирањето!\nОваа опција користете ја само откако OTA ажурирање е направено.\nПродолжи?</string>
     <string name="setup_title">Дополнителни подесувања</string>
-    <string name="select_patch_file">Избери и обнови ја датотеката</string>
-    <string name="patch_file_msg">Избери само image датотека (*.img) или ODIN tar датотека (*.tar)</string>
     <string name="reboot_delay_toast">Рестартирање за 5 секунди…</string>
 
     <!--Toasts, Dialogs-->
@@ -82,22 +80,8 @@
     <string name="settings_hosts_summary">Поддршка за несистемски хостови за Adblock апликации.</string>
     <string name="settings_hosts_toast">Додаден е модул за несистемски хостови</string>
 
-    <string name="settings_su_app_adb">Апликации и АДБ</string>
-    <string name="settings_su_app">Само апликации</string>
-    <string name="settings_su_adb">Само АДБ</string>
-    <string name="settings_su_disable">Оневозможено</string>
-    <string name="settings_su_request_10">10 секунди</string>
-    <string name="settings_su_request_15">15 секунди</string>
-    <string name="settings_su_request_20">20 секунди</string>
-    <string name="settings_su_request_30">30 секунди</string>
-    <string name="settings_su_request_45">45 секунди</string>
-    <string name="settings_su_request_60">60 секунди</string>
-    <string name="superuser_access">Пристап за супер-корисник</string>
-    <string name="auto_response">Автоматски одговор</string>
-    <string name="request_timeout">Временско ограничување на барање</string>
+
     <string name="superuser_notification">Супер-корисник известување</string>
-    <string name="settings_su_reauth_title">Повторна автентикација по надградба</string>
-    <string name="settings_su_reauth_summary">Повторна автентикација за супер-корисник дозвола по надградбата на апликацијата</string>
 
     <string name="multiuser_mode">Режим на повеќе корисници</string>
     <string name="settings_owner_only">Само сопственикот на уредот</string>
@@ -116,17 +100,17 @@
     <string name="isolate_summary">Секоја рут сесија ќе има свој изолиран именски простор.</string>
 
     <!--Superuser-->
-    <string name="su_request_title">Супер-корисник барање</string>
+
     <string name="deny">Одбиј</string>
-    <string name="prompt">Прашај</string>
+
     <string name="grant">Одобри</string>
-    <string name="su_warning">Дава целосен пристап на вашиот уред.\nОдбијте ако не сте сигурни!</string>
-    <string name="forever">Засекогаш</string>
-    <string name="once">Еднаш</string>
-    <string name="tenmin">10 минути</string>
-    <string name="twentymin">20 минути</string>
-    <string name="thirtymin">30 минути</string>
-    <string name="sixtymin">60 минути</string>
+
+
+
+
+
+
+
     <string name="su_allow_toast">На %1$s се доделени правата на супер-корисник</string>
     <string name="su_deny_toast">На %1$s се одбиени правата на супер-корисник</string>
     <string name="su_snack_grant">Правата за супер-корисник од %1$s се одобрени</string>

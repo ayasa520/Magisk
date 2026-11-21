@@ -4,9 +4,17 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <pthread.h>
+#include <cstdarg>
+#include <cstring>
+#include <memory>
 #include <functional>
 
 #include <rust/cxx.h>
+
+#ifndef __printflike
+#define __printflike(a, b) __attribute__((__format__(__printf__, a, b)))
+#endif
 
 void LOGD(const char *fmt, ...) __printflike(1, 2);
 void LOGI(const char *fmt, ...) __printflike(1, 2);
@@ -39,21 +47,18 @@ int xsymlink(const char *target, const char *linkpath);
 int xmount(const char *source, const char *target,
            const char *filesystemtype, unsigned long mountflags,
            const void *data);
-int bind_mount_(const char *from, const char *to);
-int tmpfs_mount(const char *from, const char *to);
 int xumount2(const char *target, int flags);
 int xrename(const char *oldpath, const char *newpath);
 int xmkdir(const char *pathname, mode_t mode);
 int xmkdirs(const char *pathname, mode_t mode);
 ssize_t xsendfile(int out_fd, int in_fd, off_t *offset, size_t count);
 pid_t xfork();
-ssize_t xrealpath(const char * __restrict__ path, char * __restrict__ buf, size_t bufsiz);
 int xmknod(const char * pathname, mode_t mode, dev_t dev);
+int xpipe2(int fds[2], int flags);
 
 // Utils
 
 int mkdirs(const char *path, mode_t mode);
-ssize_t canonical_path(const char * __restrict__ path, char * __restrict__ buf, size_t bufsiz);
 bool rm_rf(const char *path);
 bool cp_afc(const char *src, const char *dest);
 bool mv_path(const char *src, const char *dest);
@@ -189,9 +194,6 @@ rust::Vec<size_t> mut_u8_patch(MutByteSlice buf, ByteSlice from, ByteSlice to);
 uint32_t parse_uint32_hex(std::string_view s);
 int parse_int(std::string_view s);
 
-using thread_entry = void *(*)(void *);
-extern "C" int new_daemon_thread(thread_entry entry, void *arg = nullptr);
-
 static inline std::string rtrim(std::string &&s) {
     s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
         return !std::isspace(ch) && ch != '\0';
@@ -199,11 +201,6 @@ static inline std::string rtrim(std::string &&s) {
     return std::move(s);
 }
 
-int fork_dont_care();
-int fork_no_orphan();
-void init_argv0(int argc, char **argv);
-void set_nice_name(Utf8CStr name);
-int switch_mnt_ns(int pid);
 std::string &replace_all(std::string &str, std::string_view from, std::string_view to);
 std::vector<std::string> split(std::string_view s, std::string_view delims);
 
@@ -219,43 +216,6 @@ extern "C" size_t strscpy(char *dest, const char *src, size_t size);
 #define vsnprintf  __use_vssprintf_instead__
 #define snprintf   __use_ssprintf_instead__
 #define strlcpy    __use_strscpy_instead__
-
-struct exec_t {
-    bool err = false;
-    int fd = -2;
-    void (*pre_exec)() = nullptr;
-    int (*fork)() = xfork;
-    const char **argv = nullptr;
-};
-
-int exec_command(exec_t &exec);
-template <class ...Args>
-int exec_command(exec_t &exec, Args &&...args) {
-    const char *argv[] = {args..., nullptr};
-    exec.argv = argv;
-    return exec_command(exec);
-}
-int exec_command_sync(exec_t &exec);
-template <class ...Args>
-int exec_command_sync(exec_t &exec, Args &&...args) {
-    const char *argv[] = {args..., nullptr};
-    exec.argv = argv;
-    return exec_command_sync(exec);
-}
-template <class ...Args>
-int exec_command_sync(Args &&...args) {
-    exec_t exec;
-    return exec_command_sync(exec, args...);
-}
-template <class ...Args>
-void exec_command_async(Args &&...args) {
-    const char *argv[] = {args..., nullptr};
-    exec_t exec {
-        .fork = fork_dont_care,
-        .argv = argv,
-    };
-    exec_command(exec);
-}
 
 template <typename T>
 constexpr auto operator+(T e) noexcept ->

@@ -1,12 +1,14 @@
 use crate::consts::MODULEROOT;
 use crate::daemon::{MagiskD, to_user_id};
-use crate::ffi::{ZygiskRequest, ZygiskStateFlags, get_magisk_tmp, update_deny_flags};
+use crate::ffi::{
+    ZygiskRequest, ZygiskStateFlags, fork_dont_care, get_magisk_tmp, update_deny_flags,
+};
 use crate::resetprop::{get_prop, set_prop};
 use crate::socket::{IpcRead, UnixSocketExt};
 use base::libc::STDOUT_FILENO;
 use base::{
-    Directory, FsPathBuilder, LoggedResult, ResultExt, Utf8CStr, WriteExt, cstr, fork_dont_care,
-    libc, log_err, raw_cstr, warn,
+    Directory, FsPathBuilder, LoggedResult, ResultExt, Utf8CStr, WriteExt, cstr, libc, log_err,
+    raw_cstr, warn,
 };
 use nix::fcntl::OFlag;
 use std::fmt::Write;
@@ -107,19 +109,21 @@ impl ZygiskState {
         Ok(())
     }
 
-    pub fn reset(&mut self, mut restore: bool) {
+    pub fn reset(&mut self, restore: bool) {
         if restore {
+            // boot-complete: reset the crash counter but KEEP the native bridge prop set, so that
+            // zygote partitions that spawn lazily AFTER boot-complete (e.g. Meta Quest's
+            // per-trust-level partition zygotes, which fork untrusted apps) still load the zygisk
+            // loader. Clearing it here is why untrusted apps were never injected on such devices.
             self.start_count = 1;
-        } else {
-            self.sockets = (None, None);
-            self.start_count += 1;
-            if self.start_count > 3 {
-                warn!("zygote crashed too many times, rolling-back");
-                restore = true;
-            }
+            self.set_prop();
+            return;
         }
 
-        if restore {
+        self.sockets = (None, None);
+        self.start_count += 1;
+        if self.start_count > 3 {
+            warn!("zygote crashed too many times, rolling-back");
             self.restore_prop();
         } else {
             self.set_prop();

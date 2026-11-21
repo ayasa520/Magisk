@@ -1,13 +1,10 @@
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/inotify.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <dirent.h>
 #include <set>
 #include <map>
 
-#include <consts.hpp>
 #include <sqlite.hpp>
 #include <core.hpp>
 
@@ -17,6 +14,7 @@ using namespace std;
 
 // For the following data structures:
 // If package name == ISOLATED_MAGIC, or app ID == -1, it means isolated service
+// If package name == WEBVIEW_ZYGOTE_MAGIC, or app ID == 1053, it means webview zygote
 
 // Package name -> list of process names
 static unique_ptr<map<string, set<string, StringCmp>, StringCmp>> pkg_to_procs_;
@@ -31,34 +29,12 @@ static pthread_mutex_t data_lock = PTHREAD_MUTEX_INITIALIZER;
 
 atomic<bool> denylist_enforced = false;
 
-static int get_app_id(const vector<int> &users, const string &pkg) {
-    struct stat st{};
-    char buf[PATH_MAX];
-    for (const auto &user_id: users) {
-        ssprintf(buf, sizeof(buf), "%s/%d/%s", APP_DATA_DIR, user_id, pkg.data());
-        if (stat(buf, &st) == 0) {
-            return to_app_id(st.st_uid);
-        }
-    }
-    return 0;
-}
-
-static void collect_users(vector<int> &users) {
-    auto data_dir = xopen_dir(APP_DATA_DIR);
-    if (!data_dir)
-        return;
-    dirent *entry;
-    while ((entry = xreaddir(data_dir.get()))) {
-        users.emplace_back(parse_int(entry->d_name));
-    }
-}
-
 static int get_app_id(const string &pkg) {
     if (pkg == ISOLATED_MAGIC)
         return -1;
-    vector<int> users;
-    collect_users(users);
-    return get_app_id(users, pkg);
+    if (pkg == WEBVIEW_ZYGOTE_MAGIC)
+        return WEBVIEW_ZYGOTE_UID;
+    return MagiskD::Get().get_app_id(pkg);
 }
 
 static void update_app_id(int app_id, const string &pkg, bool remove) {
@@ -144,6 +120,9 @@ static bool validate(const char *pkg, const char *proc) {
             proc_valid = false;
             break;
         }
+    } else if (str_eql(pkg, WEBVIEW_ZYGOTE_MAGIC)) {
+        pkg_valid = true;
+        proc_valid = str_eql(proc, WEBVIEW_ZYGOTE_MAGIC);
     } else {
         for (char c; (c = *pkg); ++pkg) {
             if (isalnum(c) || c == '_')
@@ -189,14 +168,8 @@ void scan_deny_apps() {
     app_id_to_pkgs.clear();
 
     char sql[4096];
-    vector<int> users;
-    collect_users(users);
     for (auto it = pkg_to_procs.begin(); it != pkg_to_procs.end();) {
-        if (it->first == ISOLATED_MAGIC) {
-            it++;
-            continue;
-        }
-        int app_id = get_app_id(users, it->first);
+        int app_id = get_app_id(it->first);
         if (app_id == 0) {
             LOGI("denylist rm: [%s]\n", it->first.data());
             ssprintf(sql, sizeof(sql), "DELETE FROM denylist WHERE package_name='%s'",

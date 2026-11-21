@@ -5,11 +5,12 @@ use crate::consts::{
 };
 use crate::db::Sqlite3;
 use crate::ffi::{
-    ModuleInfo, RequestCode, RespondCode, denylist_handler, get_magisk_tmp, scan_deny_apps,
+    ModuleInfo, RequestCode, RespondCode, denylist_handler, fork_dont_care, get_magisk_tmp,
+    scan_deny_apps, set_nice_name,
 };
 use crate::logging::{android_logging, magisk_logging, setup_logfile, start_log_daemon};
 use crate::module::remove_modules;
-use crate::package::ManagerInfo;
+use crate::package::TrackedFile;
 use crate::resetprop::{get_prop, set_prop};
 use crate::selinux::restore_tmpcon;
 use crate::socket::{IpcRead, IpcWrite};
@@ -19,7 +20,7 @@ use crate::zygisk::ZygiskState;
 use base::const_format::concatcp;
 use base::{
     AtomicArc, BufReadExt, FileAttr, FsPathBuilder, LoggedResult, ReadExt, ResultExt, Utf8CStr,
-    Utf8CStrBuf, WriteExt, cstr, fork_dont_care, info, libc, log_err, set_nice_name,
+    Utf8CStrBuf, WriteExt, cstr, info, libc, log_err,
 };
 use nix::fcntl::OFlag;
 use nix::mount::MsFlags;
@@ -40,7 +41,6 @@ use std::time::Duration;
 pub static MAGISKD: OnceLock<MagiskD> = OnceLock::new();
 
 pub const AID_ROOT: i32 = 0;
-pub const AID_SHELL: i32 = 2000;
 pub const AID_APP_START: i32 = 10000;
 pub const AID_APP_END: i32 = 19999;
 pub const AID_USER_OFFSET: i32 = 100000;
@@ -56,7 +56,7 @@ pub const fn to_user_id(uid: i32) -> i32 {
 #[derive(Default)]
 pub struct MagiskD {
     pub sql_connection: Mutex<Option<Sqlite3>>,
-    pub manager_info: Mutex<ManagerInfo>,
+    pub manager_info: Mutex<TrackedFile>,
     pub boot_stage_lock: Mutex<BootState>,
     pub module_list: OnceLock<Vec<ModuleInfo>>,
     pub zygisk_enabled: AtomicBool,
@@ -64,6 +64,7 @@ pub struct MagiskD {
     pub cached_su_info: AtomicArc<SuInfo>,
     pub sdk_int: i32,
     pub is_emulator: bool,
+    pub is_headless: bool,
     is_recovery: bool,
     exe_attr: FileAttr,
 }
@@ -75,14 +76,6 @@ impl MagiskD {
 
     pub fn sdk_int(&self) -> i32 {
         self.sdk_int
-    }
-
-    pub fn app_data_dir(&self) -> &'static Utf8CStr {
-        if self.sdk_int >= 24 {
-            cstr!("/data/user_de")
-        } else {
-            cstr!("/data/user")
-        }
     }
 
     fn handle_request_sync(&self, mut client: UnixStream, code: RequestCode) {
@@ -236,25 +229,21 @@ impl MagiskD {
             | RequestCode::ZYGOTE_RESTART
             | RequestCode::SQLITE_CMD
             | RequestCode::DENYLIST
-            | RequestCode::STOP_DAEMON => {
-                if !is_root {
-                    client.write_pod(&RespondCode::ROOT_REQUIRED.repr).log_ok();
-                    return;
-                }
+            | RequestCode::STOP_DAEMON
+                if !is_root =>
+            {
+                client.write_pod(&RespondCode::ROOT_REQUIRED.repr).log_ok();
+                return;
             }
-            RequestCode::REMOVE_MODULES => {
-                if !is_root && !is_shell {
-                    // Only allow root and ADB shell to remove modules
-                    client.write_pod(&RespondCode::ACCESS_DENIED.repr).log_ok();
-                    return;
-                }
+            RequestCode::REMOVE_MODULES if !is_root && !is_shell => {
+                // Only allow root and ADB shell to remove modules
+                client.write_pod(&RespondCode::ACCESS_DENIED.repr).log_ok();
+                return;
             }
-            RequestCode::ZYGISK => {
-                if !is_zygote {
-                    // Invalid client context
-                    client.write_pod(&RespondCode::ACCESS_DENIED.repr).log_ok();
-                    return;
-                }
+            RequestCode::ZYGISK if !is_zygote => {
+                // Invalid client context
+                client.write_pod(&RespondCode::ACCESS_DENIED.repr).log_ok();
+                return;
             }
             _ => {}
         }
@@ -324,6 +313,7 @@ fn daemon_entry() {
     let is_emulator = get_prop(cstr!("ro.kernel.qemu")) == "1"
         || get_prop(cstr!("ro.boot.qemu")) == "1"
         || get_prop(cstr!("ro.product.device")).contains("vsoc");
+    let is_headless = get_prop(cstr!("ro.fw.mu.headless_system_user")) == "true";
 
     // Load config status
     let magisk_tmp = get_magisk_tmp();
@@ -408,6 +398,7 @@ fn daemon_entry() {
     let daemon = MagiskD {
         sdk_int,
         is_emulator,
+        is_headless,
         is_recovery,
         exe_attr,
         ..Default::default()

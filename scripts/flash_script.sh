@@ -12,7 +12,6 @@ umask 022
 
 OUTFD=$2
 COMMONDIR=$INSTALLER/assets
-CHROMEDIR=$INSTALLER/assets/chromeos
 
 APK="$3"
 MAGISKBINTMP=$INSTALLER/bin
@@ -51,15 +50,16 @@ is_mounted /data || mount /data || is_mounted /cache || mount /cache
 mount_partitions
 check_data
 get_flags
-find_boot_image
-
-[ -z $BOOTIMAGE ] && abort "! Unable to detect target image"
-ui_print "- Target image: $BOOTIMAGE"
+if [ "$SYSTEMINSTALL" != "true" ]; then
+  find_boot_image
+  [ -z "$BOOTIMAGE" ] && abort "! Unable to detect target image"
+  ui_print "- Target image: $BOOTIMAGE"
+fi
 
 # Detect version and architecture
 api_level_arch_detect
 
-[ $API -lt 23 ] && abort "! Magisk only support Android 6.0 and above"
+[ $API -lt 24 ] && abort "! Magisk only support Android 7.0 and above"
 
 ui_print "- Device platform: $ABI"
 
@@ -102,18 +102,8 @@ ADDOND=/system/addon.d
 ADDOND_MAGISK=$ADDOND/magisk
 
 if [ "$SYSTEMINSTALL" == "true" ]; then
-  unzip -oj "$APK" "res/raw/manager.sh"
-  BOOTMODE_OLD="$BOOTMODE"
-  . ./manager.sh
-  BOOTMODE="$BOOTMODE_OLD"
-  . $COMMONDIR/util_functions.sh
   ADDOND_MAGISK=/system/etc/init/magisk
-  [ -f "$ADDOND/99-magisk.sh" ] && sed -i "s/^SYSTEMINSTALL=.*/SYSTEMINSTALL=true/g" $ADDOND/99-magisk.sh
-  if $BOOTMODE; then
-    direct_install_system "$MAGISKBINTMP" || { cleanup_system_installation; unmount_system_mirrors; abort "! Installation failed"; }
-  else
-    direct_install_system "$MAGISKBINTMP" || { cleanup_system_installation; abort "! Installation failed"; }
-  fi
+  install_magisk_system "$APK" "$MAGISKBINTMP" || abort "! Installation failed"
 else
   install_magisk
 fi
@@ -133,6 +123,9 @@ if [ -d /system/addon.d ]; then
     mv $ADDOND/magisk/boot_patch.sh $ADDOND/magisk/boot_patch.sh.in
   fi
   mv $ADDOND_MAGISK/addon.d.sh $ADDOND/99-magisk.sh
+  if [ "$SYSTEMINSTALL" == "true" ]; then
+    sed -i 's/^SYSTEMINSTALL=.*/SYSTEMINSTALL=true/' "$ADDOND/99-magisk.sh"
+  fi
 fi
 
 # Cleanups

@@ -17,25 +17,16 @@
     <string name="update">Güncelle</string>
     <string name="not_available">Yok</string>
     <string name="hide">Gizle</string>
-    <string name="restore">Geri Yükle</string>
     <string name="home_package">Paket</string>
     <string name="home_app_title">Uygulama</string>
-    <string name="home_core_title">Çekirdek</string>
     <string name="reinstall">Yeniden Yükle</string>
     <string name="home_notice_content">UYARI! Magisk yazarı tarafından resmi olarak desteklenmeyen, resmi olmayan bir Magisk sürümü kullanıyorsunuz. Bu sürüm, cihazınıza zarar verebilecek veya güvenliğinizi tehlikeye atabilecek kararsız değişiklikler içerebilir. Lütfen resmi Magisk kanallarına herhangi bir sorun bildirmeyin veya yardım istemeyin.</string>
     <string name="home_support_title">Bizi Destekleyin</string>
     <string name="home_follow_title">Bizi Takip Edin</string>
     <string name="home_item_source">Kaynak</string>
-    <string name="home_support_content">Magisk her zaman ücretsiz ve açık kaynaklı kalacaktır. Ancak bağış yaparak bize destek olduğunuzu gösterebilirsiniz.</string>
-    <string name="donate">Bağış Yap</string>
-    <string name="documents">Belgeler</string>
-    <string name="report_bugs">Hata Bildir</string>
-    <string name="home_status_title">Durum</string>
-    <string name="home_installed_version">Yüklü</string>
+    <string name="home_support_content">Magisk her zaman ücretsiz ve açık kaynaklı kalacaktır. Ancak bağış yaparak bize destek olduğunuzu gösterebilirsiniz.</string>    <string name="home_installed_version">Yüklü</string>
     <string name="home_latest_version">En Son</string>
-    <string name="invalid_update_channel">Geçersiz güncelleme kanalı</string>
-    <string name="uninstall">Kaldır</string>
-    <string name="uninstall_magisk_title">Magisk\'i Kaldır</string>
+    <string name="invalid_update_channel">Geçersiz güncelleme kanalı</string>    <string name="uninstall_magisk_title">Magisk\'i Kaldır</string>
     <string name="uninstall_magisk_msg">Tüm modüller devre dışı bırakılacak/kaldırılacak!\nRoot kaldırılacak!\nMagisk kullanımıyla şifresi çözülen tüm dahili depolama birimleri yeniden şifrelenecek!</string>
 
     <!--Install-->
@@ -49,31 +40,26 @@
     <string name="manager_download_install">İndirmek ve yüklemek için dokunun</string>
     <string name="direct_install">Doğrudan kurulum (Önerilen)</string>
     <string name="direct_install_system">Sisteme doğrudan kurulum</string>
-    <string name="direct_install_summary">Magisk\'i doğrudan boot (ön yükleme) bölümüne kurun</string>
     <string name="install_inactive_slot">Etkin olmayan slota kur (OTA\'dan sonra)</string>
-    <string name="install_inactive_slot_summary">Bir OTA güncellemesinden sonra etkin olmayan slota kur</string>
-    <string name="select_patch_file_summary">Bir ham imajı, ODIN tar veya payload.bin dosyasını yamalayın</string>
     <string name="install_inactive_slot_msg">Cihazınız yeniden başlatıldıktan sonra mevcut etkin olmayan slottan başlatılmaya ZORLANACAK!\nBu seçeneği yalnızca OTA işlemi bittikten sonra kullanın.\nDevam edilsin mi?</string>
     <string name="setup_title">Ek kurulum</string>
-    <string name="select_patch_file">Bir dosya seçin ve yamalayın</string>
-    <string name="patch_file_msg">Bir ham imaj (*.img), ODIN tar dosyası (*.tar) veya payload.bin (*.bin) seçin</string>
     <string name="reboot_delay_toast">5 saniye içinde yeniden başlatılıyor…</string>
     <string name="flash_screen_title">Kurulum</string>
 
     <!--Superuser-->
-    <string name="su_request_title">Bu uygulama root izni istiyor. Cihazınıza tam erişim sağlar. Emin değilseniz reddedin!</string>
-    <string name="touch_filtered_warning">Bir uygulama Süper Kullanıcı isteğini perdelendiği için Magisk yanıtınızı doğrulayamıyor.</string>
+
+
     <string name="deny">Reddet</string>
-    <string name="prompt">Sor</string>
+
     <string name="restrict">Kısıtla</string>
     <string name="grant">İzin Ver</string>
-    <string name="su_warning">Cihazınıza tam erişim sağlar.\nEmin değilseniz reddedin!</string>
-    <string name="forever">Süresiz</string>
-    <string name="once">Bir Kez</string>
-    <string name="tenmin">10 dk</string>
-    <string name="twentymin">20 dk</string>
-    <string name="thirtymin">30 dk</string>
-    <string name="sixtymin">60 dk</string>
+
+
+
+
+
+
+
     <string name="su_allow_toast">%1$s uygulamasına Süper Kullanıcı hakları verildi</string>
     <string name="su_deny_toast">%1$s uygulamasının Süper Kullanıcı hakları reddedildi</string>
     <string name="su_snack_grant">%1$s uygulamasının Süper Kullanıcı hakları onaylandı</string>
@@ -99,12 +85,7 @@
     <string name="log_data_magisk_none">Magisk günlükleri boş, bu çok garip.</string>
     <string name="menuSaveLog">Günlüğü kaydet</string>
     <string name="menuClearLog">Günlüğü şimdi temizle</string>
-    <string name="logs_cleared">Günlük başarıyla temizlendi</string>
-    <string name="save_log">Günlüğü kaydet</string>
-    <string name="clear_log">Günlüğü temizle</string>
-    <string name="back">Geri</string>
-    <string name="superuser_setting">Süper Kullanıcı Ayarı</string>
-    <string name="enabled">Etkin</string>
+    <string name="logs_cleared">Günlük başarıyla temizlendi</string>    <string name="back">Geri</string>    <string name="enabled">Etkin</string>
     <string name="disabled">Devre Dışı</string>
     <string name="pid">PID: %1$d</string>
     <string name="target_uid">Hedef UID: %1$d</string>
@@ -153,10 +134,6 @@
     <string name="settings_dark_mode_dark">Her zaman koyu</string>
     <string name="settings_download_path_title">İndirme yolu</string>
     <string name="settings_download_path_message">Dosyalar %1$s konumuna kaydedilecek</string>
-    <string name="settings_hide_app_title">Magisk uygulamasını gizle</string>
-    <string name="settings_hide_app_summary">Rastgele bir paket kimliği ve özel uygulama etiketiyle bir proxy uygulama yükleyin</string>
-    <string name="settings_restore_app_title">Magisk uygulamasını geri yükle</string>
-    <string name="settings_restore_app_summary">Uygulamayı görünür yapın ve orijinal APK\'yı geri yükleyin</string>
     <string name="language">Dil</string>
     <string name="system_default">(Sistem varsayılanı)</string>
     <string name="settings_check_update_title">Güncellemeleri kontrol et</string>
@@ -175,27 +152,9 @@
     <string name="settings_hosts_title">Sistemsiz (Systemless) hosts</string>
     <string name="settings_hosts_summary">Reklam engelleme uygulamaları için sistemsiz hosts desteği</string>
     <string name="settings_hosts_toast">Sistemsiz hosts modülü eklendi</string>
-    <string name="settings_app_name_hint">Yeni isim</string>
-    <string name="settings_app_name_helper">Uygulama bu isimle yeniden paketlenecek</string>
-    <string name="settings_app_name_error">Geçersiz biçim</string>
-    <string name="settings_su_app_adb">Uygulamalar ve ADB</string>
-    <string name="settings_su_app">Sadece uygulamalar</string>
-    <string name="settings_su_adb">Sadece ADB</string>
-    <string name="settings_su_disable">Devre Dışı</string>
-    <string name="settings_su_request_10">10 saniye</string>
-    <string name="settings_su_request_15">15 saniye</string>
-    <string name="settings_su_request_20">20 saniye</string>
-    <string name="settings_su_request_30">30 saniye</string>
-    <string name="settings_su_request_45">45 saniye</string>
-    <string name="settings_su_request_60">60 saniye</string>
-    <string name="superuser_access">Süper Kullanıcı erişimi</string>
-    <string name="auto_response">Otomatik yanıt</string>
-    <string name="request_timeout">İstek zaman aşımı</string>
     <string name="superuser_notification">Süper Kullanıcı bildirimi</string>
-    <string name="settings_su_reauth_title">Yükseltmeden sonra yeniden kimlik doğrula</string>
-    <string name="settings_su_reauth_summary">Uygulamaları yükselttikten sonra Süper Kullanıcı izinlerini tekrar sor</string>
-    <string name="settings_su_tapjack_title">Dokunma hırsızlığı (Tapjacking) koruması</string>
-    <string name="settings_su_tapjack_summary">Süper Kullanıcı onay penceresi, başka bir pencere veya katman tarafından perdelendiğinde dokunuşlara tepki vermez</string>
+
+
     <string name="settings_su_auth_title">Kullanıcı kimlik doğrulaması</string>
     <string name="settings_su_auth_summary">Süper Kullanıcı istekleri sırasında kullanıcı kimlik doğrulaması iste</string>
     <string name="settings_su_auth_insecure">Cihazda yapılandırılmış bir kimlik doğrulama yöntemi yok</string>
@@ -209,7 +168,6 @@
     <string name="color_mode_monet_system">Monet (Sistem)</string>
     <string name="color_mode_monet_light">Monet (Açık)</string>
     <string name="color_mode_monet_dark">Monet (Koyu)</string>
-    <string name="setting_add_shortcut_summary">Uygulamayı gizledikten sonra adının ve simgesinin tanınması zorlaşması ihtimaline karşı ana ekrana güzel bir kısayol ekleyin</string>
     <string name="settings_doh_title">HTTPS üzerinden DNS (DoH)</string>
     <string name="settings_doh_description">Bazı ülkelerdeki DNS zehirlenmesine karşı geçici çözüm</string>
     <string name="settings_random_name_title">Çıktı adını rastgele yap</string>
@@ -247,12 +205,9 @@
     <string name="reboot">Yeniden Başlat</string>
     <string name="close">Kapat</string>
     <string name="release_notes">Sürüm notları</string>
-    <string name="flashing">Yazılıyor…</string>
-    <string name="running">Çalışıyor…</string>
-    <string name="done">Tamamlandı!</string>
+    <string name="flashing">Yazılıyor…</string>    <string name="done">Tamamlandı!</string>
     <string name="done_action">%1$s işlemi tamamlandı</string>
     <string name="failure">Başarısız!</string>
-    <string name="hide_app_title">Magisk uygulaması gizleniyor…</string>
     <string name="open_link_failed_toast">Bağlantıyı açacak uygulama bulunamadı</string>
     <string name="complete_uninstall">Tamamen kaldır</string>
     <string name="restore_img">İmajları geri yükle</string>
@@ -270,15 +225,9 @@
     <string name="unsupport_system_app_msg">Bu uygulamayı bir sistem uygulaması olarak çalıştırmak desteklenmez. Lütfen uygulamayı kullanıcı uygulamasına dönüştürün.</string>
     <string name="unsupport_other_su_msg">Magisk\'e ait olmayan bir \"su\" ikili dosyası algılandı. Lütfen rakip root çözümlerini kaldırın ve/veya Magisk\'i yeniden yükleyin.</string>
     <string name="unsupport_external_storage_msg">Magisk harici depolamaya yüklenmiş. Lütfen uygulamayı dahili depolamaya taşıyın.</string>
-    <string name="unsupport_nonroot_stub_msg">Root izni kaybedildiği için gizli Magisk uygulaması çalışmaya devam edemiyor. Lütfen orijinal APK\'yı geri yükleyin.</string>
-    <string name="unsupport_nonroot_stub_title">@string/settings_restore_app_title</string>
     <string name="external_rw_permission_denied">Bu işlevi etkinleştirmek için depolama izni verin</string>
     <string name="post_notifications_denied">Bu işlevi etkinleştirmek için bildirim izni verin</string>
     <string name="install_unknown_denied">Bu işlevi etkinleştirmek için \"Bilinmeyen uygulamaları yükle\" iznini verin</string>
-    <string name="add_shortcut_title">Ana ekrana kısayol ekle</string>
-    <string name="add_shortcut_msg">Bu uygulama gizlendikten sonra adının ve simgesinin tanınması zorlaşabilir. Ana ekrana şık bir kısayol eklemek ister misiniz?</string>
     <string name="app_not_found">Bu işlemi gerçekleştirecek uygulama bulunamadı</string>
     <string name="reboot_apply_change">Değişiklikleri uygulamak için yeniden başlat</string>
-    <string name="restore_app_confirmation">Bu işlem, gizli uygulamayı orijinal uygulamaya dönüştürecektir. Bunu gerçekten yapmak istiyor musunuz?</string>
-
 </resources>

@@ -44,24 +44,22 @@
     <string name="install_inactive_slot">Įdiegti į antrąją vietą (po OTA naujinimo)</string>
     <string name="install_inactive_slot_msg">Jūsų įremginys bus PRIVERSTAS pasileisti į dabartinę neaktyvią vietą po paleidimo iš naujo!\nNaudokite šią parinktį, kai OTA naujinimas yra baigtas.\nTęsti?</string>
     <string name="setup_title">Išplėstinė sąranka</string>
-    <string name="select_patch_file">Pasirinkite ir taisykite failą</string>
-    <string name="patch_file_msg">Pasirinkite vaizdo failą (*.img) arba ODIN archyvą (*.tar)</string>
     <string name="reboot_delay_toast">Paleidžiama iš naujo po 5 sekundžių…</string>
     <string name="flash_screen_title">Įdiegimas</string>
 
     <!--Superuser-->
-    <string name="su_request_title">Supernaudotojo užklausa</string>
-    <string name="touch_filtered_warning">Programėlė užstoja supernaudotojo užklausą, todėl Magisk negali patvirtinti jūsų atsakymo</string>
+
+
     <string name="deny">Atmesti</string>
-    <string name="prompt">Klausti</string>
+
     <string name="grant">Leisti</string>
-    <string name="su_warning">Suteikia prieigą prie jūsų įrenginio.\nAtmeskite, jei nesate tikri!</string>
-    <string name="forever">Amžinai</string>
-    <string name="once">Kartą</string>
-    <string name="tenmin">10 minučių</string>
-    <string name="twentymin">20 minučių</string>
-    <string name="thirtymin">30 minučių</string>
-    <string name="sixtymin">60 minučių</string>
+
+
+
+
+
+
+
     <string name="su_allow_toast">%1$s suteiktos supernaudotojo teisės</string>
     <string name="su_deny_toast">%1$s atmestos supernaudotojo teisės</string>
     <string name="su_snack_grant">%1$s supernaudotojo teisės yra suteiktos</string>
@@ -123,10 +121,6 @@
     <string name="settings_dark_mode_dark">Visada tamsi</string>
     <string name="settings_download_path_title">Atsisiuntimo kelias</string>
     <string name="settings_download_path_message">Failai bus išsaugoti %1$s</string>
-    <string name="settings_hide_app_title">Slėpti Magisk programėlę</string>
-    <string name="settings_hide_app_summary">Įdiegti įgaliotąją programėlę su atsitiktiniu paketo ID ir kitu pavadinimu</string>
-    <string name="settings_restore_app_title">Atkurti Magisk programėlę</string>
-    <string name="settings_restore_app_summary">Atkurti programėlę ir originalų APK</string>
     <string name="language">Kalba</string>
     <string name="system_default">(Sistemos numatytoji)</string>
     <string name="settings_check_update_title">Naujinimų tikrinimas</string>
@@ -144,29 +138,10 @@
     <string name="settings_hosts_title">Basisteminis hosts</string>
     <string name="settings_hosts_summary">Basisteminis hosts palaiko reklamų blokatorių programėlėms</string>
     <string name="settings_hosts_toast">Pridėtas besisteminio hosts modulis</string>
-    <string name="settings_app_name_hint">Naujas pavadinimas</string>
-    <string name="settings_app_name_helper">Programėlė bus perpakuota su šiuo pavadinimu</string>
-    <string name="settings_app_name_error">Netinkamas formatas</string>
-    <string name="settings_su_app_adb">Programėlės ir ADB</string>
-    <string name="settings_su_app">Tik programėlės</string>
-    <string name="settings_su_adb">Tik ADB</string>
-    <string name="settings_su_disable">Išjungta</string>
-    <string name="settings_su_request_10">10 sekundžių</string>
-    <string name="settings_su_request_15">15 sekundžių</string>
-    <string name="settings_su_request_20">20 sekundžių</string>
-    <string name="settings_su_request_30">30 sekundžių</string>
-    <string name="settings_su_request_45">45 sekundės</string>
-    <string name="settings_su_request_60">60 sekundžių</string>
-    <string name="superuser_access">Prieigos lygis</string>
-    <string name="auto_response">Automatinis atsakymas</string>
-    <string name="request_timeout">Atsakymo laukimas</string>
     <string name="superuser_notification">Supernaudotojo pranešimas</string>
-    <string name="settings_su_reauth_title">Pakartotinis autentifikavimas</string>
-    <string name="settings_su_reauth_summary">Iš naujo prašyti supernaudotojo teisių po programėlių naujinimo</string>
-    <string name="settings_su_tapjack_title">Bakstelėjimų perėmimo apsauga</string>
-    <string name="settings_su_tapjack_summary">Supernaudotojo užklausos langas bus neaktyvus, kol jis yra užstotas kito lango</string>
+
+
     <string name="settings_customization">Tinkinimas</string>
-    <string name="setting_add_shortcut_summary">Pridėti nuorodą į pagrindinį ekraną, jei po programėlės paslėpimo yra sunku atpažinti jos pavadinimą ir piktogramą</string>
     <string name="settings_doh_title">DNS virš HTTPS</string>
     <string name="settings_doh_description">Aktyvinti DoH (naudokite, jei kyla problemų jungiantis prie tinklo</string>
 
@@ -206,7 +181,6 @@
     <string name="flashing">Diegiama…</string>
     <string name="done">Baigta!</string>
     <string name="failure">Nepavyko!</string>
-    <string name="hide_app_title">Slepiama Magisk programėlė…</string>
     <string name="open_link_failed_toast">Nerasta programėlių nuorodos atidarymui</string>
     <string name="complete_uninstall">Visiškas pašalinimas</string>
     <string name="restore_img">Atkurti vaizdą</string>
@@ -224,15 +198,9 @@
     <string name="unsupport_system_app_msg">Šios programėlės vykdymas kaip sistemos programėlės yra nepalaikomas. Nustatykite ją atgal į naudotojo programėlę.</string>
     <string name="unsupport_other_su_msg">Aptiktas dvejetainis failas \"su\" ne iš Magisk. Pašalinkite pašalinį root teisių tiekėją ir/arba iš naujo įdiekite Magisk.</string>
     <string name="unsupport_external_storage_msg">Magisk yra įdiegtas išorinėje saugykloje. Perkelkite programėlę į vidinę saugyklą.</string>
-    <string name="unsupport_nonroot_stub_msg">Paslėpta Magisk programėlė negali tęsti darbo, nes root teisės buvo prarastos. Atkurkite originalų APk.</string>
-    <string name="unsupport_nonroot_stub_title">@string/settings_restore_app_title</string>
     <string name="external_rw_permission_denied">Suteikti prieigą prie saugyklos</string>
     <string name="post_notifications_denied">Suteikti prieigą prie pranešimų</string>
     <string name="install_unknown_denied">Suteikti prieigą prie įdiegimo iš nežinomų šaltinių</string>
-    <string name="add_shortcut_title">Pridėti nuorodą į pagrindinį ekraną</string>
-    <string name="add_shortcut_msg">Po šios programėlės paslėpimo jos pavadinimas, piktograma gali būti sunkiai atpažįstamos. Norite pridėti nuorodą į pagrindinį ekraną?</string>
     <string name="app_not_found">Nerasta programėlė, galinti atlikti šį veiksmą</string>
     <string name="reboot_apply_change">Paleiskite iš naujo, kad pritaikytumėte pakeitimus</string>
-    <string name="restore_app_confirmation">Šis veiksmas atkurs paslėptą programėlę į originalią būseną. Tikrai norite tai padaryti?</string>
-
 </resources>

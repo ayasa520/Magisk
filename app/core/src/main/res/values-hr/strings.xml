@@ -41,23 +41,21 @@
     <string name="install_inactive_slot">Instaliraj u neaktivni utor (Nakon OTA)</string>
     <string name="install_inactive_slot_msg">Vaš će se uređaj prisiliti pokrenuti s trenutnog neaktivnog mjesta nakon ponovnog pokretanja!\nKoristite tu opciju samo nakon što je OTA dovršena.\nContinue?</string>
     <string name="setup_title">Dodatno postavljanje</string>
-    <string name="select_patch_file">Odaberite patch datoteku</string>
-    <string name="patch_file_msg">Odaberite raw (*.img) ili ODIN tarfile (*.tar)</string>
     <string name="reboot_delay_toast">Ponovno pokretanje za 5 sekundi…</string>
     <string name="flash_screen_title">Instalacija</string>
 
     <!--Superuser-->
-    <string name="su_request_title">Superuser zahtjev</string>
+
     <string name="deny">Odbij</string>
-    <string name="prompt">Upit</string>
+
     <string name="grant">Odobri</string>
-    <string name="su_warning">Odobren puni pristup vašem uređaju.\nOdbijte ako niste sigurni!</string>
-    <string name="forever">Zauvijek</string>
-    <string name="once">Jednom</string>
-    <string name="tenmin">10 min</string>
-    <string name="twentymin">20 min</string>
-    <string name="thirtymin">30 min</string>
-    <string name="sixtymin">60 min</string>
+
+
+
+
+
+
+
     <string name="su_allow_toast">%1$s su dodijeljena Superuser prava</string>
     <string name="su_deny_toast">%1$s su odbijena Superuser prava</string>
     <string name="su_snack_grant">Superuser prava su dodijeljena za %1$s</string>
@@ -123,27 +121,8 @@
     <string name="settings_hosts_title">Hostovi bez sistema</string>
     <string name="settings_hosts_summary">Podrška za hostove bez sistema za Adblock aplikacije</string>
     <string name="settings_hosts_toast">Dodan je modul hosta bez sistema</string>
-    <string name="settings_app_name_hint">Novi naziv</string>
-    <string name="settings_app_name_helper">Aplikacija će se prepakirati na ovaj naziv</string>
-    <string name="settings_app_name_error">Nevažeći format</string>
-    <string name="settings_su_app_adb">Aplikacije i ADB</string>
-    <string name="settings_su_app">Samo aplikacije</string>
-    <string name="settings_su_adb">Samo ADB</string>
-    <string name="settings_su_disable">Onemogućeno</string>
-    <string name="settings_su_request_10">10 sekundi</string>
-    <string name="settings_su_request_15">15 sekundi</string>
-    <string name="settings_su_request_20">20 sekundi</string>
-    <string name="settings_su_request_30">30 sekundi</string>
-    <string name="settings_su_request_45">45 sekundi</string>
-    <string name="settings_su_request_60">60 sekundi</string>
-    <string name="superuser_access">Superuser pristup</string>
-    <string name="auto_response">Automatski odgovor</string>
-    <string name="request_timeout">Vremensko ograničenje zahtjeva</string>
     <string name="superuser_notification">Superuser obavijest</string>
-    <string name="settings_su_reauth_title">Ponovno provjerite autentičnost nakon ažuriranja</string>
-    <string name="settings_su_reauth_summary">Ponovno provjerite autentičnost Superuser-a dopuštenja nakon ažuriranja aplikacije</string>
     <string name="settings_customization">Prilagodba</string>
-    <string name="setting_add_shortcut_summary">Dodajte lijepi prečac na početni zaslon u slučaju da je naziv i ikonu teško prepoznati nakon skrivanja aplikacije</string>
     <string name="settings_doh_title">DNS preko HTTPS-a</string>
     <string name="settings_doh_description">Zaobilazno trovanje DNS-om u nekim zemljama</string>
 
@@ -191,6 +170,5 @@
     <string name="setup_msg">Postavljanje okruženja za pokretanje…</string>
     <string name="unsupport_magisk_title">Nepodržana Magisk verzija</string>
     <string name="external_rw_permission_denied">Odobrite dopuštenje za pohranu da biste omogućili ovu funkciju</string>
-    <string name="add_shortcut_title">Dodaj prečac na početni zaslon</string>
     <string name="app_not_found">Nije pronađena nijedna aplikacijaza obradu ove radnju</string>
 </resources>

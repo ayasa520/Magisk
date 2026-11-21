@@ -42,24 +42,22 @@
     <string name="install_inactive_slot">செயலற்ற ஸ்லாட்டுக்கு நிறுவவும் (OTA க்குப் பிறகு)</string>
     <string name="install_inactive_slot_msg">மறுதொடக்கம் செய்தபின் தற்போதைய செயலற்ற ஸ்லாட்டுக்கு துவக்க உங்கள் சாதனம் கட்டாயப்படுத்தப்படும்!\nOTA முடிந்தபின் மட்டுமே இந்த விருப்பத்தைப் பயன்படுத்தவும்.\nதொடரவா?</string>
     <string name="setup_title">கூடுதல் அமைப்பு</string>
-    <string name="select_patch_file">ஒரு கோப்பைத் தேர்ந்தெடுத்து ஒட்டவும்</string>
-    <string name="patch_file_msg">மூல படம் (* .img) அல்லது ODIN டார்ஃபைல் (* .tar) ஐத் தேர்ந்தெடுக்கவும்</string>
     <string name="reboot_delay_toast">5 வினாடிகளில் மீண்டும் துவக்குகிறது…</string>
     <string name="flash_screen_title">நிறுவல்</string>
 
     <!--Superuser-->
-    <string name="su_request_title">சூப்பர் யூசர் கோரிக்கை</string>
-    <string name="touch_filtered_warning">ஒரு பயன்பாடு ஒரு சூப்பர் யூசர் கோரிக்கையை மறைப்பதால், மேகிஸ்கால் உங்கள் பதிலைச் சரிபார்க்க முடியாது</string>
+
+
     <string name="deny">மறு</string>
-    <string name="prompt">உடனடி</string>
+
     <string name="grant">வழங்கு</string>
-    <string name="su_warning">உங்கள் சாதனத்திற்கு முழு அணுகலை வழங்குகிறது.\nஉங்களுக்கு உறுதியாக தெரியவில்லை என்றால் மறுக்கவும்!</string>
-    <string name="forever">என்றென்றும்</string>
-    <string name="once">ஒருமுறை</string>
-    <string name="tenmin">10 நிமிடங்கள்</string>
-    <string name="twentymin">20 நிமிடங்கள்</string>
-    <string name="thirtymin">30 நிமிடங்கள்</string>
-    <string name="sixtymin">ஒரு மணி நேரம்</string>
+
+
+
+
+
+
+
     <string name="su_allow_toast">%1$s க்கு சூப்பர் யூசர் உரிமைகள் வழங்கப்பட்டன</string>
     <string name="su_deny_toast">%1$s க்கு சூப்பர் யூசர் உரிமைகள் மறுக்கப்பட்டன</string>
     <string name="su_snack_grant">%1$s இன் சூப்பர் யூசர் உரிமைகள் வழங்கப்படுகின்றன</string>
@@ -115,10 +113,6 @@
     <string name="settings_dark_mode_dark">எப்போதும் இருண்டது</string>
     <string name="settings_download_path_title">பதிவிறக்க இடம்</string>
     <string name="settings_download_path_message">%1$s ல் கோப்புகள் சேமிக்கப்படும்</string>
-    <string name="settings_hide_app_title">மேஜிஸ்க் செயலியை மறைக்கவும்</string>
-    <string name="settings_hide_app_summary">சீரற்ற தொகுப்பு ஐடி மற்றும் தனிப்பயன் பயன்பாட்டு லேபிளுடன் ப்ராக்ஸி பயன்பாட்டை நிறுவவும்</string>
-    <string name="settings_restore_app_title">மேஜிஸ்க் பயன்பாட்டை மீட்டமை</string>
-    <string name="settings_restore_app_summary">பயன்பாட்டை மறைத்து, அசல் APK க்கு மீண்டும் மீட்டமைக்கவும்</string>
     <string name="language">மொழி</string>
     <string name="system_default">(தொலைபேசியின் இயல்புநிலை)</string>
     <string name="settings_check_update_title">புதுப்பிப்புகளைச் சரிபார்க்கவும்</string>
@@ -131,29 +125,10 @@
     <string name="settings_hosts_title">கணினி இல்லாத ஹோஸ்ட்கள்</string>
     <string name="settings_hosts_summary">கணினி இல்லாத ஹோஸ்ட்கள் Adblock பயன்பாடுகளுக்கு ஆதரவளிக்கின்றன</string>
     <string name="settings_hosts_toast">கணினி இல்லாத ஹோஸ்ட்கள் தொகுதி சேர்க்கப்பட்டது</string>
-    <string name="settings_app_name_hint">புதிய பெயர்</string>
-    <string name="settings_app_name_helper">பயன்பாடு இந்த பெயருக்கு மீண்டும் தொகுக்கப்படும்</string>
-    <string name="settings_app_name_error">தவறான வடிவம்</string>
-    <string name="settings_su_app_adb">பயன்பாடுகள் மற்றும் ADB</string>
-    <string name="settings_su_app">பயன்பாடுகள் மட்டும்</string>
-    <string name="settings_su_adb">ADB மட்டும்</string>
-    <string name="settings_su_disable">முடக்கப்பட்டது</string>
-    <string name="settings_su_request_10">10 வினாடிகள்</string>
-    <string name="settings_su_request_15">15 வினாடிகள்</string>
-    <string name="settings_su_request_20">20 வினாடிகள்</string>
-    <string name="settings_su_request_30">30 வினாடிகள்</string>
-    <string name="settings_su_request_45">45 வினாடிகள்</string>
-    <string name="settings_su_request_60">60 வினாடிகள்</string>
-    <string name="superuser_access">சூப்பர் யூசர் அணுகல்</string>
-    <string name="auto_response">தானியங்கி பதில்</string>
-    <string name="request_timeout">கோரிக்கை முடிவு நேரம்</string>
     <string name="superuser_notification">சூப்பர் யூசர் அறிவிப்பு</string>
-    <string name="settings_su_reauth_title">மேம்படுத்தப்பட்ட பிறகு மீண்டும் அங்கீகரிக்கவும்</string>
-    <string name="settings_su_reauth_summary">பயன்பாட்டு மேம்படுத்தல்களுக்குப் பிறகு சூப்பர் யூசர் அனுமதிகளை மீண்டும் அங்கீகரிக்கவும்</string>
-    <string name="settings_su_tapjack_title">டாப்ஜாகிங் பாதுகாப்பை இயக்கு</string>
-    <string name="settings_su_tapjack_summary">வேறு எந்த சாளரத்தாலும் அல்லது மேலடுக்கினாலும் மறைக்கப்படும்போது சூப்பர் யூசர் வரியில் உரையாடல் உள்ளீட்டிற்கு பதிலளிக்காது</string>
+
+
     <string name="settings_customization">தனிப்பயனாக்கம்</string>
-    <string name="setting_add_shortcut_summary">பயன்பாட்டை மறைத்தபின் பெயர் மற்றும் ஐகான் அடையாளம் காண கடினமாக இருந்தால் முகப்புத் திரையில் அழகான குறுக்குவழியைச் சேர்க்கவும்</string>
     <string name="settings_doh_title">HTTPS வழியாக டி.என்.எஸ்</string>
     <string name="settings_doh_description">சில நாடுகளில் டி.என்.எஸ் பணிபுரியும்</string>
 
@@ -190,7 +165,6 @@
     <string name="flashing">ஏற்றுகிறது…</string>
     <string name="done">முடிந்தது!</string>
     <string name="failure">தோல்வி!</string>
-    <string name="hide_app_title">மேஜிஸ்க் பயன்பாட்டை மறைக்கிறது…</string>
     <string name="open_link_failed_toast">இணைப்பைத் திறக்க எந்த பயன்பாடும் கிடைக்கவில்லை</string>
     <string name="complete_uninstall">நிறுவல் நீக்குதல்</string>
     <string name="restore_img">படங்களை மீட்டமை</string>
@@ -204,8 +178,6 @@
     <string name="unsupport_magisk_title">ஆதரிக்கப்படாத மேஜிஸ்க் பதிப்பு</string>
     <string name="unsupport_magisk_msg">பயன்பாட்டின் இந்த பதிப்பு மேஜிஸ்க் பதிப்பை %1$s ஐ விடக் குறைவாக ஆதரிக்காது.</string>
     <string name="external_rw_permission_denied">இந்த செயல்பாட்டை இயக்க சேமிப்பக அனுமதி வழங்கவும்</string>
-    <string name="add_shortcut_title">முகப்புத் திரையில் குறுக்குவழியைச் சேர்க்கவும்</string>
-    <string name="add_shortcut_msg">இந்த பயன்பாட்டை மறைத்த பிறகு, அதன் பெயர் மற்றும் ஐகானை அடையாளம் காண்பது கடினமாகிவிடும். முகப்புத் திரையில் அழகான குறுக்குவழியைச் சேர்க்க விரும்புகிறீர்களா??</string>
     <string name="app_not_found">இந்த செயலைக் கையாள எந்த பயன்பாடும் கிடைக்கவில்லை</string>
 
 </resources>

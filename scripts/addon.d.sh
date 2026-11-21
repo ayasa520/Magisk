@@ -18,7 +18,6 @@ MAGISKBIN=/data/adb/magisk
 MAGISKTMPDIR=/tmp/magisk
 [ -z "$S" ] && S=/system
 ADDOND="$S/addon.d"
-APK="$S/addon.d/magisk/magisk.apk"
 
 V1_FUNCS=/tmp/backuptool.functions
 V2_FUNCS=/postinstall/tmp/backuptool.functions
@@ -113,26 +112,19 @@ main() {
     fi
   fi
 
-  find_boot_image
-  [ -z $BOOTIMAGE ] && abort "! Unable to detect target image"
-  ui_print "- Target image: $BOOTIMAGE"
+  if [ "$SYSTEMINSTALL" != "true" ]; then
+    find_boot_image
+    [ -z "$BOOTIMAGE" ] && abort "! Unable to detect target image"
+    ui_print "- Target image: $BOOTIMAGE"
+  fi
 
   api_level_arch_detect
   ui_print "- Device platform: $ABI"
 
   remove_system_su
   chmod -R 755 $MAGISKBIN
-  if [ "$SYSTEMINSTALL" == "true" ];then
-    unzip -oj "$ADDOND/magisk/magisk.apk" "res/raw/manager.sh"
-    BOOTMODE_OLD="$BOOTMODE"
-    . ./manager.sh
-    BOOTMODE="$BOOTMODE_OLD"
-    . $MAGISKBIN/util_functions.sh
-    if $BOOTMODE; then
-      direct_install_system "$MAGISKBINTMP" || { cleanup_system_installation; unmount_system_mirrors; abort "! Installation failed"; }
-    else
-      direct_install_system "$MAGISKBINTMP" || { cleanup_system_installation; abort "! Installation failed"; }
-    fi
+  if [ "$SYSTEMINSTALL" == "true" ]; then
+    install_magisk_system "$MAGISKBIN/magisk.apk" "$MAGISKBIN" || abort "! Installation failed"
   else
     install_magisk
   fi
@@ -161,7 +153,7 @@ case "$1" in
   ;;
   pre-backup)
     # Back up PREINITDEVICE from existing partition before OTA on A-only devices
-    if ! $backuptool_ab; then
+    if ! $backuptool_ab && [ "$SYSTEMINSTALL" != "true" ]; then
       initialize
       # Suppress ui_print for this stage
       ui_print() { return; }

@@ -42,24 +42,22 @@
     <string name="install_inactive_slot">Installer til inaktiv plass (etter OTA)</string>
     <string name="install_inactive_slot_msg">Din enhet vil bli tvunget til å starte opp i inaktiv plass etter omstart!\nKun bruk dette etter at OTA er ferdig.\Fortsett?</string>
     <string name="setup_title">Ytterligere oppsett</string>
-    <string name="select_patch_file">Velg og utfør programfiks av en fil</string>
-    <string name="patch_file_msg">Velg et rå-avtrykk (*.img) eller en ODIN-tjæreballfil (*.tar)</string>
     <string name="reboot_delay_toast">Starter på ny om 5 sek …</string>
     <string name="flash_screen_title">Installasjon</string>
 
     <!--Superuser-->
-    <string name="su_request_title">Superbrukerforespørsel</string>
-    <string name="touch_filtered_warning">Fordi et program tilslører en superbrukerforespørsel kan ikke Magisk bekrefte</string>
+
+
     <string name="deny">Avslå</string>
-    <string name="prompt">Spør</string>
+
     <string name="grant">Innvilg</string>
-    <string name="su_warning">Gir full tilgang til enheten din.\nAvslå hvis du ikke er sikker!</string>
-    <string name="forever">Permanent</string>
-    <string name="once">Én gang</string>
-    <string name="tenmin">10 min</string>
-    <string name="twentymin">20 min</string>
-    <string name="thirtymin">30 min</string>
-    <string name="sixtymin">60 min</string>
+
+
+
+
+
+
+
     <string name="su_allow_toast">%1$s ble innvilget superbruker-rettigheter</string>
     <string name="su_deny_toast">%1$s ble nektet superbruker-rettigheter</string>
     <string name="su_snack_grant">Superbruker-rettigheter for %1$s ble innvilget</string>
@@ -115,10 +113,6 @@
     <string name="settings_dark_mode_dark">Alltid mørk</string>
     <string name="settings_download_path_title">Nedlastingssti</string>
     <string name="settings_download_path_message">Filer vil lagres i %1$s</string>
-    <string name="settings_hide_app_title">Skjul Magisk-programmet</string>
-    <string name="settings_hide_app_summary">Installer et mellomtjenerprogram med tilfeldig pakke-ID og egendefinert program-etikett</string>
-    <string name="settings_restore_app_title">Gjenopprett Magisk-programmet</string>
-    <string name="settings_restore_app_summary">Opphev skjuling av programmet og gjenopprett det tilbake til opprinnelig APK</string>
     <string name="language">Språk</string>
     <string name="system_default">(Systemforvalg)</string>
     <string name="settings_check_update_title">Finn nye versjoner</string>
@@ -131,29 +125,10 @@
     <string name="settings_hosts_title">Systemløs vertsfil</string>
     <string name="settings_hosts_summary">Systemløs vertsfilstøtte for reklameblokkeringsprogrammer</string>
     <string name="settings_hosts_toast">La til modul for systemløs vertsfil</string>
-    <string name="settings_app_name_hint">Nytt navn</string>
-    <string name="settings_app_name_helper">Programmet vil bli ompakket til dette navnet</string>
-    <string name="settings_app_name_error">Ugyldig format</string>
-    <string name="settings_su_app_adb">Programmer og ADB</string>
-    <string name="settings_su_app">Kun programmer</string>
-    <string name="settings_su_adb">Kun ADB</string>
-    <string name="settings_su_disable">Avskrudd</string>
-    <string name="settings_su_request_10">10 sekunder</string>
-    <string name="settings_su_request_15">15 sekunder</string>
-    <string name="settings_su_request_20">20 sekunder</string>
-    <string name="settings_su_request_30">30 sekunder</string>
-    <string name="settings_su_request_45">45 sekunder</string>
-    <string name="settings_su_request_60">60 sekunder</string>
-    <string name="superuser_access">Superbruker-tilgang</string>
-    <string name="auto_response">Automatisk svar</string>
-    <string name="request_timeout">Tidsavbrudd for forespørsel</string>
     <string name="superuser_notification">Superbruker-merknad</string>
-    <string name="settings_su_reauth_title">Ny identitetsbekreftelse etter oppgradering</string>
-    <string name="settings_su_reauth_summary">Identitetsbekreft superbrukertilganger etter programoppgraderinger</string>
-    <string name="settings_su_tapjack_title">Trykkstjelingsbeskyttelse</string>
-    <string name="settings_su_tapjack_summary">Superbrukings-forespørselsdialogen vil ikke svare på inndata mens den dekkes av et annet vindu eller lag</string>
+
+
     <string name="settings_customization">Tilpasning</string>
-    <string name="setting_add_shortcut_summary">Legg til fin snarvei på hjemmeskjermen i fall navnet og ikonet er vanskelig å gjenkjenne etter skjuling av programmet</string>
     <string name="settings_doh_title">DNS over HTTPS</string>
     <string name="settings_doh_description">Unngåelse av DNS-forgiftelse i noen land</string>
 
@@ -190,7 +165,6 @@
     <string name="flashing">Innbrenner …</string>
     <string name="done">Ferdig!</string>
     <string name="failure">Mislykket!</string>
-    <string name="hide_app_title">Skjuler Magisk-programmet …</string>
     <string name="open_link_failed_toast">Ingen programmer kunne åpne lenken</string>
     <string name="complete_uninstall">Fullfør avinstallasjon</string>
     <string name="restore_img">Gjenopprett avtrykk</string>
@@ -207,11 +181,7 @@
     <string name="unsupport_system_app_msg">Kjøring av dette programmet som systemprogram støttes ikke. Gjør om programmet til et brukerprogram igjen.</string>
     <string name="unsupport_other_su_msg">En \"su\"-kommando som ikke tilhører Magisk ble oppdaget. Fjern dette andre ustøttede opphavet.</string>
     <string name="unsupport_external_storage_msg">Magisk er installert på eksternlagring. Flytt det til internlagring.</string>
-    <string name="unsupport_nonroot_stub_msg">Programmet kan ikke fortsette å fungere i skjult tilstand siden rot-tilgang gikk tapt. Gjenopprett det tilbake til opprinnelig APK.</string>
-    <string name="unsupport_nonroot_stub_title">@string/settings_restore_app_title</string>
     <string name="external_rw_permission_denied">Innvilg lagringstilgang for å skru på denne funksjonaliteten</string>
-    <string name="add_shortcut_title">Legg til snarvei på hjemmeskjermen</string>
-    <string name="add_shortcut_msg">Etter å ha skjult programmet kan det vli vanskelig å gjenkjenne navn og ikon. Legg til fin snarvei på hjemmeskjermen?</string>
     <string name="app_not_found">Ingen programmer kan håndtere denne forespørselen</string>
 
 </resources>

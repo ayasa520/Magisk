@@ -1,6 +1,11 @@
-use crate::consts::{APPLET_NAMES, DEVICEDIR, INTERNAL_DIR, MAGISK_PROC_CON, MAGISK_VER_CODE, MAGISK_VERSION, POST_FS_DATA_WAIT_TIME};
+use crate::consts::{
+    APPLET_NAMES, DEVICEDIR, INTERNAL_DIR, MAGISK_PROC_CON, MAGISK_VER_CODE, MAGISK_VERSION,
+    POST_FS_DATA_WAIT_TIME,
+};
 use crate::daemon::connect_daemon;
-use crate::ffi::{RequestCode, denylist_cli, get_magisk_tmp, install_module, mount_sbin, unlock_blocks};
+use crate::ffi::{
+    RequestCode, denylist_cli, get_magisk_tmp, install_module, mount_sbin, unlock_blocks,
+};
 use crate::mount::find_preinit_device;
 use crate::selinux::restorecon;
 use crate::socket::{Decodable, Encodable};
@@ -328,27 +333,19 @@ impl MagiskAction {
                 return Ok(mount_sbin());
             }
             SetupSbin(self::SetupSbin { source_dir, target_dir }) => {
-                let magisk_tmp_cstr;
-                let magisk_tmp = if let Some(ref dir) = target_dir {
-                    magisk_tmp_cstr = dir;
-                    magisk_tmp_cstr.as_str()
-                } else {
-                    "/sbin"
-                };
-                
+                let magisk_tmp = target_dir.as_deref().unwrap_or(cstr!("/sbin"));
+
                 if magisk_tmp == "/sbin" {
                     if mount_sbin() != 0 {
                         return Ok(-1);
                     }
-                } else {
-                    let magisk_tmp_ref = target_dir.as_ref().unwrap();
-                    if cstr!("magisk").tmpfs_mount(magisk_tmp_ref).log().is_err() {
-                        return Ok(-1);
-                    }
+                } else if cstr!("magisk").tmpfs_mount(magisk_tmp).log().is_err() {
+                    return Ok(-1);
                 }
-                
-                let bins = ["magisk", "magisk32", "magiskpolicy", "stub.apk"];
-                for bin in &bins {
+
+                // System mode starts the native tools from this tmpfs. The
+                // manager is installed as a regular APK separately.
+                for bin in ["magisk", "magisk32", "magiskpolicy"] {
                     let src = Utf8CString::from(format!("{}/{}", source_dir, bin));
                     let dest = Utf8CString::from(format!("{}/{}", magisk_tmp, bin));
                     
@@ -358,12 +355,12 @@ impl MagiskAction {
                     }
                 }
                 
-                std::env::set_current_dir(magisk_tmp)?;
+                std::env::set_current_dir(magisk_tmp.as_str())?;
                 
                 cstr!(INTERNAL_DIR).mkdir(0o755)?;
                 cstr!(DEVICEDIR).mkdir(0o711)?;
 
-                install_applet(magisk_tmp)?;
+                install_applet(magisk_tmp.as_str())?;
             }
             Install(self::InstallApplets { path }) => {
                 let install_path = path
@@ -387,31 +384,27 @@ pub fn magisk_main(argc: i32, argv: *mut *mut c_char) -> i32 {
     
     if cmds.len() >= 2 && cmds[1] == "--auto-selinux" {
         use std::fs::OpenOptions;
-        use std::io::{Read, Write, Seek, SeekFrom};
-        
+        use std::io::{Read, Seek, SeekFrom, Write};
+
         if let Ok(mut file) = OpenOptions::new()
             .read(true)
             .write(true)
             .open("/proc/self/attr/current")
         {
-            if file.write_all(MAGISK_PROC_CON.as_bytes()).is_ok() {
+            let mut transition = file.write_all(MAGISK_PROC_CON.as_bytes());
+            if transition.is_err() {
+                // Some system-mode boots can use the su domain even when the
+                // kernel refuses the transition to the Magisk domain.
+                let _ = file.seek(SeekFrom::Start(0));
+                transition = file.write_all(b"u:r:su:s0");
+            }
+            if transition.is_ok() {
                 let _ = file.seek(SeekFrom::Start(0));
                 let mut current_con = [0u8; 128];
-                if let Ok(n) = file.read(&mut current_con) {
-                    if let Ok(con_str) = std::str::from_utf8(&current_con[..n]) {
-                        eprintln!("SeLinux context: {}", con_str.trim_end_matches('\0'));
-                    }
-                }
-            } else {
-                let _ = file.seek(SeekFrom::Start(0));
-                if file.write_all(b"u:r:su:s0").is_ok() {
-                    let _ = file.seek(SeekFrom::Start(0));
-                    let mut current_con = [0u8; 128];
-                    if let Ok(n) = file.read(&mut current_con) {
-                        if let Ok(con_str) = std::str::from_utf8(&current_con[..n]) {
-                            eprintln!("SeLinux context: {}", con_str.trim_end_matches('\0'));
-                        }
-                    }
+                if let Ok(n) = file.read(&mut current_con)
+                    && let Ok(con_str) = std::str::from_utf8(&current_con[..n])
+                {
+                    eprintln!("SeLinux context: {}", con_str.trim_end_matches('\0'));
                 }
             }
         }

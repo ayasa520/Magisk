@@ -2,17 +2,14 @@ package com.topjohnwu.magisk.core
 
 import android.app.Activity
 import android.app.Application
-import android.app.LocaleManager
 import android.content.ComponentCallbacks2
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Configuration
-import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.system.Os
 import androidx.profileinstaller.ProfileInstaller
-import com.topjohnwu.magisk.StubApk
 import com.topjohnwu.magisk.core.base.UntrackedActivity
 import com.topjohnwu.magisk.core.utils.LocaleSetting
 import com.topjohnwu.magisk.core.utils.NetworkObserver
@@ -79,11 +76,7 @@ object AppContext : ContextWrapper(null),
         app.registerActivityLifecycleCallbacks(this)
         app.registerComponentCallbacks(this)
 
-        AppApkPath = if (isRunningAsStub) {
-            StubApk.current(base).path
-        } else {
-            base.packageResourcePath
-        }
+        AppApkPath = base.packageResourcePath
         resources.patch()
 
         val shellBuilder = Shell.Builder.create()
@@ -101,25 +94,12 @@ object AppContext : ContextWrapper(null),
         // Pre-heat the shell ASAP
         Shell.getShell(null) {}
 
-        if (SDK_INT >= 34 && isRunningAsStub) {
-            // Send over the locale config manually
-            val lm = getSystemService(LocaleManager::class.java)
-            lm.overrideLocaleConfig = LocaleSetting.localeConfig
-        }
         networkObserver = NetworkObserver.init(this)
-        if (!BuildConfig.DEBUG && !isRunningAsStub) {
+        if (!BuildConfig.DEBUG) {
             @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
             GlobalScope.launch(Dispatchers.IO) {
                 ProfileInstaller.writeProfile(this@AppContext)
             }
-        }
-    }
-
-    override fun createDeviceProtectedStorageContext(): Context {
-        return if (SDK_INT >= Build.VERSION_CODES.N) {
-            super.createDeviceProtectedStorageContext()
-        } else {
-            this
         }
     }
 

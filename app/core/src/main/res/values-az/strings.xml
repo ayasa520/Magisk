@@ -44,24 +44,22 @@
     <string name="install_inactive_slot">Aktiv olmayan Slot\'a quraşdır (OTA\'dan sonra)</string>
     <string name="install_inactive_slot_msg">Cihazınız yenidən başladıqdan sonra aktiv olmayan slotda başlamağa MƏCBUR ediləcək!\nBu seçimi ancaq OTA bitdikdən sonra tətbiq edin.\nDavam edilsin?</string>
     <string name="setup_title">Əlavə Sazlamalar</string>
-    <string name="select_patch_file">Fayl seç və yamaqla</string>
-    <string name="patch_file_msg">(*.img) yaxud ODIN (*.tar) seç</string>
     <string name="reboot_delay_toast">5 saniyəyə yenidən başlayacaq…</string>
     <string name="flash_screen_title">Quraşdırılma</string>
 
     <!--Superuser-->
-    <string name="su_request_title">Super İstifadəçi İcazəsi</string>
-    <string name="touch_filtered_warning">Hansısa tətbiq Super İstifadəçi icazəsini pozduğuna görə, Magisk göstərişinizi yerinə yetirə bilmir</string>
+
+
     <string name="deny">İmtina et</string>
-    <string name="prompt">İstək</string>
+
     <string name="grant">İcazə ver</string>
-    <string name="su_warning">Bu tətbiqə tam səlahiyyət verəcək.\nƏmin deyilsənsə imtina et!</string>
-    <string name="forever">Həmişə</string>
-    <string name="once">1 dəfəlik</string>
-    <string name="tenmin">10 dəqiqəlik</string>
-    <string name="twentymin">20 dəqiqəlik</string>
-    <string name="thirtymin">30 dəqiqəlik</string>
-    <string name="sixtymin">60 dəqiqəlik</string>
+
+
+
+
+
+
+
     <string name="su_allow_toast">%1$s Super İstifadəçi icazəsi aldı</string>
     <string name="su_deny_toast">%1$s Super İstifadəçi icazəsi ala bilmədi</string>
     <string name="su_snack_grant">%1$s üçün Super İstifadəçi haqları verilib</string>
@@ -125,10 +123,6 @@
     <string name="settings_dark_mode_dark">Həmişə Qaranlıq</string>
     <string name="settings_download_path_title">Endirmə yolu</string>
     <string name="settings_download_path_message">Fayllar %1$s\'a yerləşdiriləcək</string>
-    <string name="settings_hide_app_title">Magisk tətbiqini gizlət</string>
-    <string name="settings_hide_app_summary">Təsadüfi paket ID\'si ilə proxy yüklə və özəl tətbiq adı yaz</string>
-    <string name="settings_restore_app_title">Magisk tətbiqini bərpa et</string>
-    <string name="settings_restore_app_summary">Tətbiqi üzə çıxar və orijinal APKnı bərpa et</string>
     <string name="language">Dil</string>
     <string name="system_default">(Sistem Dili)</string>
     <string name="settings_check_update_title">Yeniləməni Yoxla</string>
@@ -146,29 +140,10 @@
     <string name="settings_hosts_title">Sistemsiz hostlar</string>
     <string name="settings_hosts_summary">Reklam əngəlləyici tətbiqlər üçün host faylları</string>
     <string name="settings_hosts_toast">Sistemsiz hostların əlavəsi quruldu</string>
-    <string name="settings_app_name_hint">Yeni Ad</string>
-    <string name="settings_app_name_helper">Tətbiq bu adla yenidən paketlənəcək</string>
-    <string name="settings_app_name_error">Keçərsiz Format</string>
-    <string name="settings_su_app_adb">Tətbiqlər və ADB</string>
-    <string name="settings_su_app">Yalmız Tətbiqlər</string>
-    <string name="settings_su_adb">Yalnız ADB</string>
-    <string name="settings_su_disable">Heç Biri</string>
-    <string name="settings_su_request_10">10 saniyə</string>
-    <string name="settings_su_request_15">15 saniyə</string>
-    <string name="settings_su_request_20">20 saniyə</string>
-    <string name="settings_su_request_30">30 saniyə</string>
-    <string name="settings_su_request_45">45 saniyə</string>
-    <string name="settings_su_request_60">60 saniyə</string>
-    <string name="superuser_access">Super istifadəçi İcazəsi</string>
-    <string name="auto_response">Avtomatik Cavab</string>
-    <string name="request_timeout">İstək Vaxtaşımı</string>
     <string name="superuser_notification">Super İstifadəçi Bildirişi</string>
-    <string name="settings_su_reauth_title">Yüksəltdikdən sonra yenidən səlahiyətləndir</string>
-    <string name="settings_su_reauth_summary">Tətbiqləri yüksəltdikdən sonra Super İstifadəçi icazəsi istə</string>
-    <string name="settings_su_tapjack_title">Saxta Ekran (Tapjacking) Qoruması</string>
-    <string name="settings_su_tapjack_summary">Super İstifadəçi icazə pəncərəsi digər pəncərələr tərəfindən əngəlləndikdə heçbir girişə cavab verməyəcək</string>
+
+
     <string name="settings_customization">Özəlləşdirmə</string>
-    <string name="setting_add_shortcut_summary">Tətbiqi gizlətdikdən sonra tapmaq çətin olmasın deyə ana ekrana qısayol əlavə et</string>
     <string name="settings_doh_title">HTTPS üzərindən DNS</string>
     <string name="settings_doh_description">Bəzi ölkələrdə DNS problemlərini həll edir</string>
 
@@ -208,7 +183,6 @@
     <string name="flashing">Flashlanır...</string>
     <string name="done">Bitdi!</string>
     <string name="failure">Alınmadı!</string>
-    <string name="hide_app_title">Magisk tətbiqi gizlədilir…</string>
     <string name="open_link_failed_toast">Keçidi açaçaq tətbiq yoxdur</string>
     <string name="complete_uninstall">Tamamilə sil</string>
     <string name="restore_img">Nüsxələri Bərpa et</string>
@@ -225,15 +199,9 @@
     <string name="unsupport_system_app_msg">Bu tətbiqi sistem tətbiqi kimi açmaq olmur. Onu yenidən istifadəçi tətbiqi etməlisiniz.</string>
     <string name="unsupport_other_su_msg">Magiskdən olmayan \"su\" tapıldı. Lütfən digər kök tətbiqi silin yaxud Magiski yenidən quraşdırın.</string>
     <string name="unsupport_external_storage_msg">Magisk xarici yaddaşa qurulub. Lütfən tətbiqi daxili yaddaşa keçirin.</string>
-    <string name="unsupport_nonroot_stub_msg">Gizli Magisk tətbiqi kök itirildiyinə görə işləməyəcək. Orijinal APKnı geri qaytarın.</string>
-    <string name="unsupport_nonroot_stub_title">@string/settings_restore_app_title</string>
     <string name="external_rw_permission_denied">Bu funksiyanı işə salmaq üçün yaddaş icazəsi verin</string>
     <string name="post_notifications_denied">Bu funksiyanı işə salmaq üçün bildiriş icazəsi verin</string>
     <string name="install_unknown_denied">"bilinməyən tətbiqləri quraşdır"\ı açsanız bu funksiya işə düşəcək</string>
-    <string name="add_shortcut_title">Ana ekranda qısayol yarat</string>
-    <string name="add_shortcut_msg">Tətbiqi gizlətdikdən sonra tapmaq çətin olmasın deyə ana ekranda qısayol yaradılsın?</string>
     <string name="app_not_found">Bu işi görəcək heçbir tətbiq yoxdur</string>
     <string name="reboot_apply_change">Dəyişikliklər təkrar başladıqdan sonra olacaq</string>
-    <string name="restore_app_confirmation">Gizli tətbiq əvvəlki halına qayıdacaq. Davam edilsin?</string>
-
 </resources>

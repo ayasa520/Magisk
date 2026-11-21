@@ -1,19 +1,20 @@
 use crate::{
     Directory, FsPathFollow, LibcReturn, LoggedResult, OsError, OsResult, Utf8CStr, Utf8CStrBuf,
-    cstr, errno, error,
+    cstr, error,
 };
 use bytemuck::{Pod, bytes_of, bytes_of_mut};
-use libc::{c_uint, makedev, mode_t};
+use libc::mode_t;
 use nix::errno::Errno;
 use nix::fcntl::{AT_FDCWD, OFlag};
 use nix::sys::stat::{FchmodatFlags, Mode};
 use nix::unistd::{AccessFlags, Gid, Uid};
 use num_traits::AsPrimitive;
 use std::cmp::min;
+#[cfg(any(target_os = "linux", target_os = "android"))]
 use std::ffi::CStr;
 use std::fmt::Display;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Read, Seek, SeekFrom, Write};
+use std::io::{BufRead, Read, Seek, SeekFrom, Write};
 use std::mem::MaybeUninit;
 use std::os::fd::{AsFd, BorrowedFd};
 use std::os::unix::ffi::OsStrExt;
@@ -148,13 +149,6 @@ fn open_fd(path: &Utf8CStr, flags: OFlag, mode: mode_t) -> OsResult<'_, OwnedFd>
     )
 }
 
-pub fn fd_path(fd: RawFd, buf: &mut dyn Utf8CStrBuf) -> OsResult<'static, ()> {
-    let path = cstr::buf::new::<64>()
-        .join_path("/proc/self/fd")
-        .join_path_fmt(fd);
-    path.read_link(buf).map_err(|e| e.set_args(None, None))
-}
-
 pub struct FileAttr {
     pub st: libc::stat,
     #[cfg(feature = "selinux")]
@@ -179,7 +173,7 @@ impl FileAttr {
     #[inline(always)]
     #[allow(clippy::unnecessary_cast)]
     fn is(&self, mode: mode_t) -> bool {
-        (self.st.st_mode & libc::S_IFMT as c_uint) as mode_t == mode
+        (self.st.st_mode as mode_t & libc::S_IFMT as mode_t) == mode
     }
 
     pub fn is_dir(&self) -> bool {
@@ -215,6 +209,7 @@ impl FileAttr {
     }
 }
 
+#[cfg(any(target_os = "linux", target_os = "android"))]
 const XATTR_NAME_SELINUX: &CStr = c"security.selinux";
 
 // Low-level methods, we should track the caller when error occurs, so return OsResult.
@@ -266,29 +261,6 @@ impl Utf8CStr {
         }
     }
 
-    // Inspired by https://android.googlesource.com/platform/bionic/+/master/libc/bionic/realpath.cpp
-    pub fn realpath(&self, buf: &mut dyn Utf8CStrBuf) -> OsResult<'_, ()> {
-        let fd = self.open(OFlag::O_PATH | OFlag::O_CLOEXEC)?;
-        let mut skip_check = false;
-
-        let st1 = match nix::sys::stat::fstat(&fd) {
-            Ok(st) => st,
-            Err(_) => {
-                // This will only fail on Linux < 3.6
-                skip_check = true;
-                unsafe { mem::zeroed() }
-            }
-        };
-
-        fd_path(fd.as_raw_fd(), buf)?;
-
-        let st2 = nix::sys::stat::stat(buf.as_cstr()).into_os_result("stat", Some(self), None)?;
-        if !skip_check && (st2.st_dev != st1.st_dev || st2.st_ino != st1.st_ino) {
-            return Err(OsError::new(Errno::ENOENT, "realpath", Some(self), None));
-        }
-        Ok(())
-    }
-
     pub fn get_attr(&self) -> OsResult<'_, FileAttr> {
         #[allow(unused_mut)]
         let mut attr = FileAttr {
@@ -327,6 +299,7 @@ impl Utf8CStr {
         Ok(())
     }
 
+    #[cfg(any(target_os = "linux", target_os = "android"))]
     pub fn get_secontext(&self, con: &mut dyn Utf8CStrBuf) -> OsResult<'_, ()> {
         con.clear();
         let result = unsafe {
@@ -349,6 +322,7 @@ impl Utf8CStr {
         }
     }
 
+    #[cfg(any(target_os = "linux", target_os = "android"))]
     pub fn set_secontext<'a>(&'a self, con: &'a Utf8CStr) -> OsResult<'a, ()> {
         unsafe {
             libc::lsetxattr(
@@ -422,21 +396,18 @@ impl Utf8CStr {
         }
 
         let mut path = cstr::buf::default();
-        let mut components = self.split('/').filter(|s| !s.is_empty());
+        let components = self.split('/').filter(|s| !s.is_empty());
 
         if self.starts_with('/') {
             path.append_path("/");
         }
 
-        loop {
-            let Some(s) = components.next() else {
-                break;
-            };
+        for s in components {
             path.append_path(s);
             path.mkdir(mode)?;
         }
 
-        *errno() = 0;
+        Errno::set_raw(0);
         Ok(())
     }
 
@@ -446,7 +417,7 @@ impl Utf8CStr {
             path.mkdir(0o777)?;
             let mut src = Directory::open(self)?;
             let dest = Directory::open(path)?;
-            src.copy_into(&dest)?;
+            src.copy_into(&dest, self, path)?;
         } else {
             // It's OK if remove failed
             path.remove().ok();
@@ -558,6 +529,7 @@ impl FsPathFollow {
         Ok(())
     }
 
+    #[cfg(any(target_os = "linux", target_os = "android"))]
     pub fn get_secontext(&self, con: &mut dyn Utf8CStrBuf) -> OsResult<'_, ()> {
         con.clear();
         let result = unsafe {
@@ -580,6 +552,7 @@ impl FsPathFollow {
         }
     }
 
+    #[cfg(any(target_os = "linux", target_os = "android"))]
     pub fn set_secontext<'a>(&'a self, con: &'a Utf8CStr) -> OsResult<'a, ()> {
         unsafe {
             libc::setxattr(
@@ -671,6 +644,7 @@ pub fn fd_set_attr(fd: RawFd, attr: &FileAttr) -> OsResult<'_, ()> {
     Ok(())
 }
 
+#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn fd_get_secontext(fd: RawFd, con: &mut dyn Utf8CStrBuf) -> OsResult<'static, ()> {
     con.clear();
     let result = unsafe {
@@ -693,6 +667,7 @@ pub fn fd_get_secontext(fd: RawFd, con: &mut dyn Utf8CStrBuf) -> OsResult<'stati
     }
 }
 
+#[cfg(any(target_os = "linux", target_os = "android"))]
 pub fn fd_set_secontext(fd: RawFd, con: &Utf8CStr) -> OsResult<'_, ()> {
     unsafe {
         libc::fsetxattr(
@@ -760,11 +735,6 @@ impl Drop for MappedFile {
     }
 }
 
-unsafe extern "C" {
-    // Don't use the declaration from the libc crate as request should be u32 not i32
-    fn ioctl(fd: RawFd, request: u32, ...) -> i32;
-}
-
 // We mark the returned slice static because it is valid until explicitly unmapped
 pub(crate) fn map_file(path: &Utf8CStr, rw: bool) -> OsResult<'_, &'static mut [u8]> {
     map_file_at(AT_FDCWD, path, rw)
@@ -775,27 +745,21 @@ pub(crate) fn map_file_at<'a>(
     path: &'a Utf8CStr,
     rw: bool,
 ) -> OsResult<'a, &'static mut [u8]> {
-    #[cfg(target_pointer_width = "64")]
-    const BLKGETSIZE64: u32 = 0x80081272;
-
-    #[cfg(target_pointer_width = "32")]
-    const BLKGETSIZE64: u32 = 0x80041272;
-
     let flag = if rw { OFlag::O_RDWR } else { OFlag::O_RDONLY };
     let fd = nix::fcntl::openat(dirfd, path, flag | OFlag::O_CLOEXEC, Mode::empty())
         .into_os_result("openat", Some(path), None)?;
-    let attr = fd_get_attr(fd.as_raw_fd())?;
+    let mut file = File::from(fd);
+    let attr = fd_get_attr(file.as_raw_fd())?;
     let sz = if attr.is_block_device() {
-        let mut sz = 0_u64;
-        unsafe {
-            ioctl(fd.as_raw_fd(), BLKGETSIZE64, &mut sz).check_os_err("ioctl", Some(path), None)?;
-        }
-        sz
+        // Use the seek function from std::fs instead of nix so that the API is consistent
+        // across all Unix OS (lseek64 does not exist on macOS).
+        file.seek(SeekFrom::End(0))
+            .into_os_result("lseek", Some(path), None)?
     } else {
         attr.st.st_size as u64
     };
 
-    map_fd(fd.as_fd(), sz as usize, rw).map_err(|e| e.set_args(Some(path), None))
+    map_fd(file.as_fd(), sz as usize, rw).map_err(|e| e.set_args(Some(path), None))
 }
 
 pub(crate) fn map_fd(fd: BorrowedFd, sz: usize, rw: bool) -> OsResult<'static, &'static mut [u8]> {
@@ -818,83 +782,4 @@ pub(crate) fn map_fd(fd: BorrowedFd, sz: usize, rw: bool) -> OsResult<'static, &
         }
         Ok(slice::from_raw_parts_mut(ptr.cast(), sz))
     }
-}
-
-#[allow(dead_code)]
-pub struct MountInfo {
-    pub id: u32,
-    pub parent: u32,
-    pub device: u64,
-    pub root: String,
-    pub target: String,
-    pub vfs_option: String,
-    pub shared: u32,
-    pub master: u32,
-    pub propagation_from: u32,
-    pub unbindable: bool,
-    pub fs_type: String,
-    pub source: String,
-    pub fs_option: String,
-}
-
-#[allow(clippy::useless_conversion)]
-fn parse_mount_info_line(line: &str) -> Option<MountInfo> {
-    let mut iter = line.split_whitespace();
-    let id = iter.next()?.parse().ok()?;
-    let parent = iter.next()?.parse().ok()?;
-    let (maj, min) = iter.next()?.split_once(':')?;
-    let maj = maj.parse().ok()?;
-    let min = min.parse().ok()?;
-    let device = makedev(maj, min).into();
-    let root = iter.next()?.to_string();
-    let target = iter.next()?.to_string();
-    let vfs_option = iter.next()?.to_string();
-    let mut optional = iter.next()?;
-    let mut shared = 0;
-    let mut master = 0;
-    let mut propagation_from = 0;
-    let mut unbindable = false;
-    while optional != "-" {
-        if let Some(peer) = optional.strip_prefix("master:") {
-            master = peer.parse().ok()?;
-        } else if let Some(peer) = optional.strip_prefix("shared:") {
-            shared = peer.parse().ok()?;
-        } else if let Some(peer) = optional.strip_prefix("propagate_from:") {
-            propagation_from = peer.parse().ok()?;
-        } else if optional == "unbindable" {
-            unbindable = true;
-        }
-        optional = iter.next()?;
-    }
-    let fs_type = iter.next()?.to_string();
-    let source = iter.next()?.to_string();
-    let fs_option = iter.next()?.to_string();
-    Some(MountInfo {
-        id,
-        parent,
-        device,
-        root,
-        target,
-        vfs_option,
-        shared,
-        master,
-        propagation_from,
-        unbindable,
-        fs_type,
-        source,
-        fs_option,
-    })
-}
-
-pub fn parse_mount_info(pid: &str) -> Vec<MountInfo> {
-    let mut res = vec![];
-    let mut path = format!("/proc/{pid}/mountinfo");
-    if let Ok(file) = Utf8CStr::from_string(&mut path).open(OFlag::O_RDONLY | OFlag::O_CLOEXEC) {
-        BufReader::new(file).for_each_line(|line| {
-            parse_mount_info_line(line)
-                .map(|info| res.push(info))
-                .is_some()
-        });
-    }
-    res
 }

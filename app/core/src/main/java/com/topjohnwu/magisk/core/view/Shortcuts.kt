@@ -8,14 +8,9 @@ import android.graphics.drawable.Icon
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.content.getSystemService
-import androidx.core.content.pm.ShortcutInfoCompat
-import androidx.core.content.pm.ShortcutManagerCompat
-import androidx.core.graphics.drawable.IconCompat
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.R
-import com.topjohnwu.magisk.core.isRunningAsStub
-import com.topjohnwu.magisk.core.ktx.getBitmap
 
 object Shortcuts {
 
@@ -26,38 +21,7 @@ object Shortcuts {
         }
     }
 
-    fun addHomeIcon(context: Context) {
-        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName) ?: return
-        val info = ShortcutInfoCompat.Builder(context, Const.Nav.HOME)
-            .setShortLabel(context.getString(R.string.magisk))
-            .setIntent(intent)
-            .setIcon(context.getIconCompat(R.drawable.ic_launcher))
-            .build()
-        ShortcutManagerCompat.requestPinShortcut(context, info, null)
-    }
-
-    private fun Context.getIcon(id: Int): Icon {
-        return if (isRunningAsStub) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                Icon.createWithAdaptiveBitmap(getBitmap(id))
-            else
-                Icon.createWithBitmap(getBitmap(id))
-        } else {
-            Icon.createWithResource(this, id)
-        }
-    }
-
-    private fun Context.getIconCompat(id: Int): IconCompat {
-        return if (isRunningAsStub) {
-            val bitmap = getBitmap(id)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                IconCompat.createWithAdaptiveBitmap(bitmap)
-            else
-                IconCompat.createWithBitmap(bitmap)
-        } else {
-            IconCompat.createWithResource(this, id)
-        }
-    }
+    private fun Context.getIcon(id: Int): Icon = Icon.createWithResource(this, id)
 
     @RequiresApi(api = 25)
     private fun getShortCuts(context: Context): List<ShortcutInfo> {

@@ -1,35 +1,9 @@
-#include <sys/wait.h>
-#include <sys/prctl.h>
 #include <sys/mman.h>
-#include <android/log.h>
-#include <linux/fs.h>
-#include <syscall.h>
 
 #include <base.hpp>
 #include <flags.h>
 
 using namespace std;
-
-#ifndef __call_bypassing_fortify
-#define __call_bypassing_fortify(fn) (&fn)
-#endif
-
-#ifdef __LP64__
-static_assert(BLKGETSIZE64 == 0x80081272);
-#else
-static_assert(BLKGETSIZE64 == 0x80041272);
-#endif
-
-// Override libc++ new implementation to optimize final build size
-
-void* operator new(std::size_t s) { return std::malloc(s); }
-void* operator new[](std::size_t s) { return std::malloc(s); }
-void  operator delete(void *p) { std::free(p); }
-void  operator delete[](void *p) { std::free(p); }
-void* operator new(std::size_t s, const std::nothrow_t&) noexcept { return std::malloc(s); }
-void* operator new[](std::size_t s, const std::nothrow_t&) noexcept { return std::malloc(s); }
-void  operator delete(void *p, const std::nothrow_t&) noexcept { std::free(p); }
-void  operator delete[](void *p, const std::nothrow_t&) noexcept { std::free(p); }
 
 rust::Vec<size_t> byte_data::patch(byte_view from, byte_view to) const {
     rust::Vec<size_t> v;
@@ -52,106 +26,6 @@ rust::Vec<size_t> byte_data::patch(byte_view from, byte_view to) const {
 rust::Vec<size_t> mut_u8_patch(MutByteSlice buf, ByteSlice from, ByteSlice to) {
     byte_data data(buf);
     return data.patch(from, to);
-}
-
-int fork_dont_care() {
-    if (int pid = xfork()) {
-        waitpid(pid, nullptr, 0);
-        return pid;
-    } else if (xfork()) {
-        exit(0);
-    }
-    return 0;
-}
-
-int fork_no_orphan() {
-    int pid = xfork();
-    if (pid)
-        return pid;
-    prctl(PR_SET_PDEATHSIG, SIGKILL);
-    if (getppid() == 1)
-        exit(1);
-    return 0;
-}
-
-int exec_command(exec_t &exec) {
-    auto pipefd = array<int, 2>{-1, -1};
-    int outfd = -1;
-
-    if (exec.fd == -1) {
-        if (xpipe2(pipefd, O_CLOEXEC) == -1)
-            return -1;
-        outfd = pipefd[1];
-    } else if (exec.fd >= 0) {
-        outfd = exec.fd;
-    }
-
-    int pid = exec.fork();
-    if (pid < 0) {
-        close(pipefd[0]);
-        close(pipefd[1]);
-        return -1;
-    } else if (pid) {
-        if (exec.fd == -1) {
-            exec.fd = pipefd[0];
-            close(pipefd[1]);
-        }
-        return pid;
-    }
-
-    // Unblock all signals
-    sigset_t set;
-    sigfillset(&set);
-    pthread_sigmask(SIG_UNBLOCK, &set, nullptr);
-
-    if (outfd >= 0) {
-        xdup2(outfd, STDOUT_FILENO);
-        if (exec.err)
-            xdup2(outfd, STDERR_FILENO);
-        close(outfd);
-    }
-
-    // Call the pre-exec callback
-    if (exec.pre_exec)
-        exec.pre_exec();
-
-    execve(exec.argv[0], (char **) exec.argv, environ);
-    PLOGE("execve %s", exec.argv[0]);
-    exit(-1);
-}
-
-int exec_command_sync(exec_t &exec) {
-    int pid = exec_command(exec);
-    if (pid < 0)
-        return -1;
-    int status;
-    waitpid(pid, &status, 0);
-    return WEXITSTATUS(status);
-}
-
-int new_daemon_thread(thread_entry entry, void *arg) {
-    pthread_t thread;
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    errno = pthread_create(&thread, &attr, entry, arg);
-    if (errno) {
-        PLOGE("pthread_create");
-    }
-    return errno;
-}
-
-static char *argv0;
-static size_t name_len;
-void init_argv0(int argc, char **argv) {
-    argv0 = argv[0];
-    name_len = (argv[argc - 1] - argv[0]) + strlen(argv[argc - 1]) + 1;
-}
-
-void set_nice_name(Utf8CStr name) {
-    memset(argv0, 0, name_len);
-    strscpy(argv0, name.c_str(), name_len);
-    prctl(PR_SET_NAME, name.c_str());
 }
 
 template<typename T, int base>
@@ -184,26 +58,6 @@ int parse_int(string_view s) {
 
 uint32_t parse_uint32_hex(string_view s) {
     return parse_num<uint32_t, 16>(s);
-}
-
-int switch_mnt_ns(int pid) {
-    int ret = -1;
-    int fd = syscall(__NR_pidfd_open, pid, 0);
-    if (fd > 0) {
-        ret = setns(fd, CLONE_NEWNS);
-        close(fd);
-    }
-    if (ret < 0) {
-        char mnt[32];
-        ssprintf(mnt, sizeof(mnt), "/proc/%d/ns/mnt", pid);
-        fd = open(mnt, O_RDONLY);
-        if (fd < 0) return 1; // Maybe process died..
-
-        // Switch to its namespace
-        ret = xsetns(fd, 0);
-        close(fd);
-    }
-    return ret;
 }
 
 string &replace_all(string &str, string_view from, string_view to) {
@@ -253,7 +107,15 @@ int ssprintf(char *dest, size_t size, const char *fmt, ...) {
 
 #undef strlcpy
 size_t strscpy(char *dest, const char *src, size_t size) {
-    return std::min(strlcpy(dest, src, size), size - 1);
+    if (size == 0) return 0;
+    size_t len = strlen(src);
+    if (len >= size) {
+        memcpy(dest, src, size - 1);
+        dest[size - 1] = '\0';
+        return size - 1;
+    }
+    memcpy(dest, src, len + 1);
+    return len;
 }
 
 #undef vsnprintf
@@ -262,11 +124,13 @@ static int fmt_and_log_with_rs(LogLevel level, const char *fmt, va_list ap) {
     char buf[sz];
     buf[0] = '\0';
     // Fortify logs when a fatal error occurs. Do not run through fortify again
-    int len = std::min(__call_bypassing_fortify(vsnprintf)(buf, sz, fmt, ap), sz - 1);
+    int len = std::min((&vsnprintf)(buf, sz, fmt, ap), sz - 1);
     log_with_rs(level, Utf8CStr(buf, len + 1));
     return len;
 }
 
+#if __has_include(<android/log.h>)
+#include <android/log.h>
 // Used to override external C library logging
 extern "C" int magisk_log_print(int prio, const char *tag, const char *fmt, ...) {
     LogLevel level;
@@ -303,6 +167,7 @@ extern "C" int magisk_log_print(int prio, const char *tag, const char *fmt, ...)
     va_end(argv);
     return ret;
 }
+#endif // __has_include(<android/log.h>)
 
 #define LOG_BODY(level)   \
     va_list argv;         \
@@ -319,11 +184,6 @@ void LOGD(const char *fmt, ...) {}
 void LOGI(const char *fmt, ...) { LOG_BODY(Info) }
 void LOGW(const char *fmt, ...) { LOG_BODY(Warn) }
 void LOGE(const char *fmt, ...) { LOG_BODY(Error) }
-
-// Export raw symbol to fortify compat
-extern "C" void __vloge(const char* fmt, va_list ap) {
-    fmt_and_log_with_rs(LogLevel::Error, fmt, ap);
-}
 
 string full_read(int fd) {
     string str;

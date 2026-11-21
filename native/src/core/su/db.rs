@@ -1,18 +1,18 @@
 use crate::daemon::{
-    AID_APP_END, AID_APP_START, AID_ROOT, AID_SHELL, MagiskD, to_app_id, to_user_id,
+    AID_APP_END, AID_APP_START, AID_ROOT, MagiskD, to_app_id, to_user_id,
 };
 use crate::db::DbArg::Integer;
-use crate::db::{MultiuserMode, RootAccess, SqlTable, SqliteResult, SqliteReturn};
+use crate::db::{MultiuserMode, SqlTable, SqliteResult, SqliteReturn};
 use crate::ffi::{DbValues, SuPolicy};
 use base::ResultExt;
 
 impl Default for SuPolicy {
     fn default() -> Self {
-        SuPolicy::Query
+        SuPolicy::Deny
     }
 }
 
-#[derive(Default)]
+#[derive(Copy, Clone, Default)]
 pub struct RootSettings {
     pub policy: SuPolicy,
     pub log: bool,
@@ -92,31 +92,14 @@ impl MagiskD {
             Err(_) => return false,
         };
 
-        // Check user root access settings
-        match cfg.root_access {
-            RootAccess::Disabled => return false,
-            RootAccess::AppsOnly => {
-                if uid == AID_SHELL {
-                    return false;
-                }
-            }
-            RootAccess::AdbOnly => {
-                if uid != AID_SHELL {
-                    return false;
-                }
-            }
-            _ => {}
-        }
-
         // Check multiuser settings
         match cfg.multiuser_mode {
-            MultiuserMode::OwnerOnly => {
-                if to_user_id(uid) != 0 {
-                    return false;
-                }
-            }
+            MultiuserMode::OwnerOnly if to_user_id(uid) != 0 => return false,
             MultiuserMode::OwnerManaged => uid = to_app_id(uid),
             _ => {}
+        }
+        if to_app_id(uid) < AID_APP_START {
+            uid = to_app_id(uid);
         }
 
         let mut granted = false;

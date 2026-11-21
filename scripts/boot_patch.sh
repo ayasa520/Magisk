@@ -21,9 +21,6 @@
 # magisk             binary    The magisk binary.
 # magiskboot         binary    A tool to manipulate boot images.
 # init-ld            binary    The library that will be LD_PRELOAD of /init
-# stub.apk           binary    The stub Magisk app to embed into ramdisk.
-# chromeos           folder    This folder includes the utility and keys to sign
-#                  (optional)  chromeos boot images. Only used for Pixel C.
 #
 #######################################################################################
 
@@ -55,8 +52,6 @@ if [ -z $SOURCEDMODE ]; then
   cd "$(getdir "${BASH_SOURCE:-$0}")"
   # Load utility functions
   . ./util_functions.sh
-  # Check if 64-bit
-  api_level_arch_detect
 fi
 
 BOOTIMAGE="$1"
@@ -85,7 +80,6 @@ chmod -R 755 .
 # Unpack
 #########
 
-CHROMEOS=false
 VENDORBOOT=false
 
 ui_print "- Unpacking boot image"
@@ -93,10 +87,6 @@ ui_print "- Unpacking boot image"
 
 case $? in
   0 ) ;;
-  2 )
-    ui_print "- ChromeOS boot image detected"
-    CHROMEOS=true
-    ;;
   3 )
     ui_print "- Vendor boot image detected"
     VENDORBOOT=true
@@ -176,7 +166,6 @@ $BOOTMODE && [ -z "$PREINITDEVICE" ] && PREINITDEVICE=$(./magisk --preinit-devic
 
 # Compress to save precious ramdisk space
 ./magiskboot compress=xz magisk magisk.xz
-./magiskboot compress=xz stub.apk stub.xz
 ./magiskboot compress=xz init-ld init-ld.xz
 
 echo "KEEPVERITY=$KEEPVERITY" > config
@@ -194,7 +183,6 @@ fi
 "mkdir 0750 overlay.d" \
 "mkdir 0750 overlay.d/sbin" \
 "add 0644 overlay.d/sbin/magisk.xz magisk.xz" \
-"add 0644 overlay.d/sbin/stub.xz stub.xz" \
 "add 0644 overlay.d/sbin/init-ld.xz init-ld.xz" \
 "patch" \
 "$SKIP_BACKUP backup ramdisk.cpio.orig" \
@@ -258,9 +246,6 @@ fi
 
 ui_print "- Repacking boot image"
 ./magiskboot repack "$BOOTIMAGE" || abort "! Unable to repack boot image"
-
-# Sign chromeos boot
-$CHROMEOS && sign_chromeos
 
 # Restore the original boot partition path
 [ -e "$BOOTNAND" ] && BOOTIMAGE="$BOOTNAND"

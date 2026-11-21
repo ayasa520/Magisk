@@ -451,17 +451,20 @@ install_magisk() {
   run_migrations
 }
 
-sign_chromeos() {
-  ui_print "- Signing ChromeOS boot image"
-
-  echo > empty
-  ./chromeos/futility vbutil_kernel --pack new-boot.img.signed \
-  --keyblock ./chromeos/kernel.keyblock --signprivate ./chromeos/kernel_data_key.vbprivk \
-  --version 1 --vmlinuz new-boot.img --config empty --arch arm --bootloader empty --flags 0x1
-
-  rm -f empty new-boot.img
-  mv new-boot.img.signed new-boot.img
-}
+# $1 = APK path
+# $2 = install dir
+install_magisk_system() (
+  local old_bootmode="$BOOTMODE"
+  local installer="$TMPDIR/app_functions.sh"
+  # The APK packages the shared installer as an asset. Source it in a
+  # subshell and reload the recovery utilities after its app-only defaults.
+  unzip -op "$1" assets/app_functions.sh >"$installer" ||
+    abort "! Unable to extract the system installer"
+  . "$installer"
+  BOOTMODE="$old_bootmode"
+  . "$2/util_functions.sh"
+  direct_install_system "$2"
+)
 
 remove_system_su() {
   [ -d /postinstall/tmp ] && POSTINST=/postinstall

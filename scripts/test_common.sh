@@ -8,10 +8,8 @@ export ANDROID_EMULATOR_HOME="$ANDROID_USER_HOME"
 export ANDROID_AVD_HOME="$ANDROID_EMULATOR_HOME/avd"
 export PATH="$PATH:$ANDROID_HOME/platform-tools"
 
-emu="$ANDROID_HOME/emulator/emulator"
-cli_tools="$ANDROID_HOME/cmdline-tools/latest"
-sdk="$cli_tools/bin/sdkmanager"
-avd="$cli_tools/bin/avdmanager"
+cmdline_tools="$ANDROID_HOME/cmdline-tools/latest"
+android="$cmdline_tools/bin/android"
 
 boot_timeout=100
 
@@ -28,11 +26,25 @@ print_error() {
   echo -e "\n\033[41;39m${1}\033[0m\n" >&2
 }
 
+ensure_android_cli() {
+  local sdk="$cmdline_tools/bin/sdkmanager"
+  if [ ! -x "$android" ]; then
+    # Update to the latest cmdline-tools
+    yes | "$sdk" --licenses > /dev/null 2>&1
+    "$sdk" 'cmdline-tools;latest'
+    # Rename cmdline-tools if updated
+    if [ -e "${cmdline_tools}-2" ]; then
+      rm -rf "$cmdline_tools"
+      mv "${cmdline_tools}-2" "$cmdline_tools"
+    fi
+  fi
+}
+
 # $1 = TestClass#method
 # $2 = component
 am_instrument() {
   set +x
-  local out=$(adb shell am instrument -w --user 0 -e class "$1" "$2")
+  local out=$(adb shell am instrument -w --user current -e class "$1" "$2")
   echo "$out"
   if grep -q 'OK (' <<< "$out"; then
     set -x
@@ -48,10 +60,10 @@ run_setup() {
   adb shell 'PATH=$PATH:/debug_ramdisk magisk -v'
 
   # Install the Magisk app
-  adb install -r -g $apk
+  adb install --user current -r -g $apk
 
   # Install the test app
-  adb install -r -g out/test.apk
+  adb install --user current -r -g out/test.apk
 
   local app='com.topjohnwu.magisk.test/com.topjohnwu.magisk.test.AppTestRunner'
 
@@ -69,22 +81,8 @@ print_apks() {
 
 run_tests() {
   local pkg='com.topjohnwu.magisk.test'
-  local self="$pkg/$pkg.TestRunner"
   local app="$pkg/$pkg.AppTestRunner"
-  local stub="repackaged.$pkg/$pkg.AppTestRunner"
 
   # Run app tests
-  am_instrument '.MagiskAppTest,.AdditionalTest' $app
-
-  # Test app hiding
-  am_instrument '.AppMigrationTest#testAppHide' $self
-
-  # Make sure it still works
-  am_instrument '.MagiskAppTest' $stub
-
-  # Test app restore
-  am_instrument '.AppMigrationTest#testAppRestore' $self
-
-  # Make sure it still works
-  am_instrument '.MagiskAppTest' $app
+  am_instrument '.SmokeTest,.IntegrationTest' $app
 }

@@ -3,21 +3,26 @@
 
 pub use base;
 use compress::{compress_bytes, decompress_bytes};
-use format::{fmt_compressed, fmt_compressed_any, fmt2name};
+use dtb::find_dtb_offset_for_cxx;
+use format::{check_fmt, fmt_compressed, fmt_compressed_any, fmt2name};
+use futility::{chromeos_blob_trailer, chromeos_vblock_size, sign_chromeos_for_cxx};
 use sign::{SHA, get_sha, sha256_hash, sign_payload_for_cxx};
 use std::env;
 
 mod cli;
+pub use cli::main;
 mod compress;
 mod cpio;
 mod dtb;
 mod format;
+mod futility;
 mod patch;
 mod payload;
 // Suppress warnings in generated code
 #[allow(warnings)]
 mod proto;
 mod sign;
+mod zimage;
 
 #[cxx::bridge]
 pub mod ffi {
@@ -31,7 +36,6 @@ pub mod ffi {
         BLOB,
         /* Compression formats */
         GZIP,
-        ZOPFLI,
         XZ,
         LZMA,
         BZIP2,
@@ -46,6 +50,17 @@ pub mod ffi {
         ZIMAGE,
     }
 
+    struct ZImage<'a> {
+        head: &'a [u8],
+        piggy: &'a [u8],
+        tail: &'a [u8],
+        fmt: FileFormat,
+        off_inflated_size: u32,
+        off_lc0: u32,
+        off_lc1: u32,
+        off_table: u32,
+    }
+
     unsafe extern "C++" {
         include!("magiskboot.hpp");
 
@@ -56,7 +71,6 @@ pub mod ffi {
         fn unpack(image: Utf8CStrRef, skip_decomp: bool, hdr: bool) -> i32;
         fn repack(src_img: Utf8CStrRef, out_img: Utf8CStrRef, skip_comp: bool);
         fn split_image_dtb(filename: Utf8CStrRef, skip_decomp: bool) -> i32;
-        fn check_fmt(buf: &[u8]) -> FileFormat;
     }
 
     extern "Rust" {
@@ -67,14 +81,28 @@ pub mod ffi {
         fn output_size(self: &SHA) -> usize;
         fn sha256_hash(data: &[u8], out: &mut [u8]);
 
+        fn check_fmt(buf: &[u8]) -> FileFormat;
         fn compress_bytes(format: FileFormat, in_bytes: &[u8], out_fd: i32);
-        fn decompress_bytes(format: FileFormat, in_bytes: &[u8], out_fd: i32);
+        fn decompress_bytes(format: FileFormat, in_bytes: &[u8], out_fd: i32) -> bool;
         fn fmt2name(fmt: FileFormat) -> *const c_char;
         fn fmt_compressed(fmt: FileFormat) -> bool;
         fn fmt_compressed_any(fmt: FileFormat) -> bool;
 
         #[cxx_name = "sign_payload"]
         fn sign_payload_for_cxx(payload: &[u8]) -> Vec<u8>;
+
+        fn chromeos_vblock_size() -> usize;
+        fn chromeos_blob_trailer() -> Vec<u8>;
+        #[cxx_name = "sign_chromeos"]
+        fn sign_chromeos_for_cxx(kernel: &[u8]) -> Vec<u8>;
+
+        #[cxx_name = "find_dtb_offset"]
+        fn find_dtb_offset_for_cxx(buf: &[u8]) -> i32;
+
+        #[Self = ZImage]
+        unsafe fn parse<'a>(zimg: &'a [u8]) -> UniquePtr<ZImage<'a>>;
+        fn new_head(self: &ZImage, payload_sz: usize) -> Vec<u8>;
+        fn new_tail(self: &ZImage, payload_sz: usize) -> Vec<u8>;
     }
 
     // BootImage FFI

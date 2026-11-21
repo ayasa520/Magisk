@@ -1,131 +1,224 @@
 package com.topjohnwu.magisk.ui.flash
 
-import android.os.Build
-import android.view.MenuItem
-import androidx.databinding.Bindable
-import androidx.databinding.ObservableArrayList
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.map
+import android.net.Uri
+import androidx.core.net.toFile
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.topjohnwu.magisk.BR
-import com.topjohnwu.magisk.R
 import com.topjohnwu.magisk.arch.BaseViewModel
+import com.topjohnwu.magisk.core.AppContext
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.ktx.reboot
 import com.topjohnwu.magisk.core.ktx.synchronized
 import com.topjohnwu.magisk.core.ktx.timeFormatStandard
 import com.topjohnwu.magisk.core.ktx.toTime
-import com.topjohnwu.magisk.core.tasks.FlashZip
+import com.topjohnwu.magisk.core.ktx.writeTo
 import com.topjohnwu.magisk.core.tasks.MagiskInstaller
-import com.topjohnwu.magisk.core.utils.MediaStoreUtils
-import com.topjohnwu.magisk.core.utils.MediaStoreUtils.outputStream
-import com.topjohnwu.magisk.databinding.set
-import com.topjohnwu.magisk.events.SnackbarEvent
+import com.topjohnwu.magisk.core.utils.MediaStoreUtils.displayName
+import com.topjohnwu.magisk.core.utils.MediaStoreUtils.inputStream
+import com.topjohnwu.magisk.terminal.TerminalEmulator
+import com.topjohnwu.magisk.terminal.appendLineOnMain
+import com.topjohnwu.magisk.terminal.runSuCommand
+import com.topjohnwu.magisk.terminal.shellQuoted
 import com.topjohnwu.superuser.CallbackList
+import com.topjohnwu.superuser.Shell
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import timber.log.Timber
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.IOException
 
-class FlashViewModel : BaseViewModel() {
+class FlashViewModel(private val savedState: SavedStateHandle) : BaseViewModel() {
 
     enum class State {
         FLASHING, SUCCESS, FAILED
     }
 
-    private val _state = MutableLiveData(State.FLASHING)
-    val state: LiveData<State> get() = _state
-    val flashing = state.map { it == State.FLASHING }
+    /**
+     * Whether the job was started before the process died. The job and its output only lived
+     * in memory and are gone, so it must never run again: repeating it may not be safe.
+     */
+    val isInterrupted = savedState.get<Boolean>(KEY_STARTED) == true
 
-    @get:Bindable
-    var showReboot = Info.isRooted
-        set(value) = set(value, field, { field = it }, BR.showReboot)
+    private val _flashState = MutableStateFlow(State.FLASHING)
+    val flashState: StateFlow<State> = _flashState.asStateFlow()
 
-    val items = ObservableArrayList<ConsoleItem>()
-    lateinit var args: FlashFragmentArgs
+    private val _showReboot = MutableStateFlow(Info.isRooted)
+    val showReboot: StateFlow<Boolean> = _showReboot.asStateFlow()
+
+    var flashAction: String = ""
+    var flashUri: Uri? = null
+    var usbDevice: String? = null
+
+    val emulator = TerminalEmulator(
+        columns = 256,
+        rows = 40,
+        cellWidthPixels = 0,
+        cellHeightPixels = 0,
+        transcriptRows = null,
+    )
+
+    private val terminalReady = CompletableDeferred<Unit>()
+
+    /** Called by the UI once the terminal has been sized to its viewport. */
+    fun onTerminalResized() {
+        terminalReady.complete(Unit)
+    }
 
     private val logItems = mutableListOf<String>().synchronized()
     private val outItems = object : CallbackList<String>() {
         override fun onAddElement(e: String?) {
             e ?: return
-            items.add(ConsoleItem(e))
-            logItems.add(e)
+            emulator.appendLineOnMain(e)
+            if (!e.startsWith('\r')) {
+                logItems.add(e)
+            }
         }
     }
 
+    // --- Actions ---
+
     fun startFlashing() {
-        val (action, uri) = args
+        savedState[KEY_STARTED] = true
+        val action = flashAction
+        val uri = flashUri
+        val usb = usbDevice
 
         viewModelScope.launch {
-            val result = when (action) {
+            when (action) {
                 Const.Value.FLASH_ZIP -> {
                     uri ?: return@launch
-                    FlashZip(uri, outItems, logItems).exec()
+                    flashZip(emulator, uri)
                 }
                 Const.Value.UNINSTALL -> {
-                    showReboot = false
-                    MagiskInstaller.Uninstall(outItems, logItems).exec()
+                    _showReboot.value = false
+                    onResult(withContext(Dispatchers.IO) {
+                        MagiskInstaller.Uninstall(outItems, logItems).exec()
+                    })
                 }
                 Const.Value.FLASH_MAGISK -> {
-                    if (Info.isEmulator)
-                        MagiskInstaller.Emulator(outItems, logItems).exec()
-                    else
-                        MagiskInstaller.Direct(outItems, logItems).exec()
+                    onResult(withContext(Dispatchers.IO) {
+                        if (Info.isEmulator)
+                            MagiskInstaller.Emulator(outItems, logItems).exec()
+                        else
+                            MagiskInstaller.Direct(outItems, logItems).exec()
+                    })
                 }
                 Const.Value.FLASH_MAGISK_SYSTEM -> {
-                    MagiskInstaller.Direct_system(outItems, logItems).exec()
+                    onResult(withContext(Dispatchers.IO) {
+                        MagiskInstaller.DirectSystem(outItems, logItems).exec()
+                    })
                 }
                 Const.Value.FLASH_INACTIVE_SLOT -> {
-                    showReboot = false
-                    MagiskInstaller.SecondSlot(outItems, logItems).exec()
+                    _showReboot.value = false
+                    onResult(withContext(Dispatchers.IO) {
+                        MagiskInstaller.SecondSlot(outItems, logItems).exec()
+                    })
                 }
                 Const.Value.PATCH_FILE -> {
                     uri ?: return@launch
-                    showReboot = false
-                    MagiskInstaller.Patch(uri, outItems, logItems).exec()
-                }
-                Const.Value.DOWNLOAD -> {
-                    uri ?: return@launch
-                    showReboot = false
-                    MagiskInstaller.Download(uri.toString(), outItems, logItems).exec()
-                }
-                else -> {
-                    back()
-                    return@launch
+                    _showReboot.value = false
+                    onResult(withContext(Dispatchers.IO) {
+                        MagiskInstaller.Patch(uri, usb, outItems, logItems).exec()
+                    })
                 }
             }
-            onResult(result)
         }
     }
 
     private fun onResult(success: Boolean) {
-        _state.value = if (success) State.SUCCESS else State.FAILED
+        _flashState.value = if (success) State.SUCCESS else State.FAILED
     }
 
-    fun onMenuItemClicked(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_save -> savePressed()
+    private suspend fun flashZip(emu: TerminalEmulator, uri: Uri) {
+        val installDir = File(AppContext.cacheDir, "flash")
+        val result = withContext(Dispatchers.IO) {
+            try {
+                installDir.deleteRecursively()
+                installDir.mkdirs()
+
+                val zipFile = if (uri.scheme == "file") {
+                    uri.toFile()
+                } else {
+                    File(installDir, "install.zip").also {
+                        try {
+                            uri.inputStream().writeTo(it)
+                        } catch (e: IOException) {
+                            val msg = if (e is FileNotFoundException) "Invalid Uri" else "Cannot copy to cache"
+                            return@withContext msg to null
+                        }
+                    }
+                }
+
+                val binary = File(installDir, "update-binary")
+                AppContext.assets.open("module_installer.sh").use { it.writeTo(binary) }
+
+                val name = uri.displayName
+                null to Triple(installDir, zipFile, name)
+            } catch (e: IOException) {
+                Timber.e(e)
+                "Unable to extract files" to null
+            }
         }
-        return true
+
+        val (error, prepResult) = result
+        if (prepResult == null) {
+            emu.appendLineOnMain("! ${error ?: "Installation failed"}")
+            _flashState.value = State.FAILED
+            return
+        }
+
+        val (dir, zipFile, displayName) = prepResult
+
+        // Start the installer with the real terminal size
+        terminalReady.await()
+        val columns = emu.mColumns
+        val rows = emu.mRows
+        // The name and path come from other apps, so never let the shell interpret them, and
+        // drop control characters from the name so it can't send escape sequences to the terminal
+        emu.appendLineOnMain("- Installing ${displayName.filterNot { it.isISOControl() }}")
+        val success = withContext(Dispatchers.IO) {
+            runSuCommand(
+                emu, columns, rows,
+                "sh ${File(dir, "update-binary").path.shellQuoted()} dummy 1 " +
+                "${zipFile.absolutePath.shellQuoted()}; " +
+                "EXIT=\$?; " +
+                "if [ \$EXIT -ne 0 ]; then echo '! Installation failed'; fi; " +
+                "exit \$EXIT"
+            )
+        }
+
+        Shell.cmd("cd /", "rm -rf $dir ${Const.TMPDIR}").submit()
+        _flashState.value = if (success) State.SUCCESS else State.FAILED
     }
 
-    private fun savePressed() = withExternalRW {
-        viewModelScope.launch(Dispatchers.IO) {
-            val name = "magisk_install_log_%s.log".format(
-                System.currentTimeMillis().toTime(timeFormatStandard)
-            )
-            val file = MediaStoreUtils.getFile(name)
-            file.uri.outputStream().bufferedWriter().use { writer ->
+    fun saveLog() {
+        val name = "magisk_install_log_%s.log".format(
+            System.currentTimeMillis().toTime(timeFormatStandard)
+        )
+        saveLogFile(name) { writer ->
+            if (flashAction == Const.Value.FLASH_ZIP) {
+                writer.write(emulator.screen.transcriptText)
+            } else {
                 synchronized(logItems) {
                     logItems.forEach {
                         writer.write(it)
-                        writer.newLine()
+                        writer.write("\n")
                     }
                 }
             }
-            SnackbarEvent(file.toString()).publish()
         }
     }
 
     fun restartPressed() = reboot()
+
+    companion object {
+        private const val KEY_STARTED = "started"
+    }
 }

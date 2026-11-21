@@ -1,0 +1,210 @@
+package com.topjohnwu.magisk.ui.superuser
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.dropUnlessResumed
+import com.topjohnwu.magisk.ui.component.onlyHorizontal
+import com.topjohnwu.magisk.ui.component.rememberBiometricAuth
+import com.topjohnwu.magisk.ui.component.verticalScrollbar
+import com.topjohnwu.magisk.ui.navigation.LocalNavigator
+import com.topjohnwu.magisk.ui.navigation.Route
+import com.topjohnwu.magisk.core.R as CoreR
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SuperuserScreen(
+    viewModel: SuperuserViewModel,
+    isFabAtBottom: Boolean,
+    modifier: Modifier = Modifier,
+    onRegisterFab: (((() -> Unit)?) -> Unit)? = null,
+    contentFocusRequester: FocusRequester? = null,
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val navigator = LocalNavigator.current
+    val requireAuth = rememberBiometricAuth()
+    // Drop taps while a screen transition runs, so a quick second tap can't open another screen
+    val openGrant = dropUnlessResumed { navigator.push(Route.SuperuserGrant) }
+
+    DisposableEffect(onRegisterFab) {
+        onRegisterFab?.invoke(openGrant)
+        onDispose {
+            onRegisterFab?.invoke(null)
+        }
+    }
+
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(CoreR.string.superuser)) },
+                scrollBehavior = scrollBehavior
+            )
+        },
+        floatingActionButton = {
+            if (onRegisterFab == null) {
+                FloatingActionButton(
+                    onClick = openGrant,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    content = {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = stringResource(CoreR.string.superuser_grant),
+                            modifier = Modifier.size(28.dp),
+                        )
+                    },
+                )
+            }
+        }
+    ) { padding ->
+        if (uiState.loading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+            return@Scaffold
+        }
+
+        if (uiState.policies.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.padding(horizontal = 32.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(CoreR.drawable.ic_superuser),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.size(64.dp)
+                    )
+                    Text(
+                        text = stringResource(CoreR.string.superuser_policy_none),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+            return@Scaffold
+        }
+
+        val listBottomPadding = padding.calculateBottomPadding() + if (isFabAtBottom) 92.dp else 12.dp
+        val scrollbarBottomPadding = padding.calculateBottomPadding() + if (isFabAtBottom) 80.dp else 12.dp
+
+        val gridState = rememberLazyGridState()
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(320.dp),
+            state = gridState,
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .consumeWindowInsets(padding)
+                .padding(padding.onlyHorizontal())
+                .verticalScrollbar(
+                    gridState,
+                    contentPadding = PaddingValues(
+                        top = padding.calculateTopPadding() + 4.dp,
+                        bottom = scrollbarBottomPadding,
+                    ),
+                ),
+            contentPadding = PaddingValues(
+                start = 12.dp,
+                top = padding.calculateTopPadding() + 16.dp,
+                end = 12.dp,
+                bottom = listBottomPadding,
+            ),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(
+                items = uiState.policies,
+                key = { "${it.uid}_${it.packageName}" },
+                contentType = { "PolicyCard" }
+            ) { item ->
+                val isLast = item == uiState.policies.lastOrNull()
+                PolicyCard(
+                    item = item,
+                    onToggle = {
+                        requireAuth {
+                            viewModel.togglePolicy(item)
+                        }
+                    },
+                    onDetail = dropUnlessResumed { navigator.push(Route.SuperuserDetail(item.uid)) },
+                    modifier = if (isLast && contentFocusRequester != null) {
+                        Modifier.focusRequester(contentFocusRequester)
+                    } else Modifier,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PolicyCard(
+    item: PolicyItem,
+    onToggle: () -> Unit,
+    onDetail: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    SuperuserAppCard(
+        packageName = item.packageName,
+        title = item.title,
+        isSharedUid = item.isSharedUid,
+        onClick = onDetail,
+        contentDescription = item.appName,
+        modifier = modifier.alpha(if (item.isEnabled) 1f else 0.5f),
+        trailingContent = {
+            Switch(
+                checked = item.isEnabled,
+                onCheckedChange = { onToggle() }
+            )
+        }
+    )
+}

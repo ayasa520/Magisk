@@ -1,0 +1,237 @@
+package com.topjohnwu.magisk.ui.superuser
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.topjohnwu.magisk.ui.component.AppSortFilterActions
+import com.topjohnwu.magisk.ui.component.rememberBiometricAuth
+import com.topjohnwu.magisk.ui.component.verticalScrollbar
+import com.topjohnwu.magisk.core.R as CoreR
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SuperuserGrantScreen(
+    viewModel: SuperuserGrantViewModel,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+
+    val loading by viewModel.loading.collectAsStateWithLifecycle()
+    val apps by viewModel.filteredApps.collectAsStateWithLifecycle()
+    val query by viewModel.query.collectAsStateWithLifecycle()
+    val showSystem by viewModel.showSystem.collectAsStateWithLifecycle()
+    val showOS by viewModel.showOS.collectAsStateWithLifecycle()
+    val sortBy by viewModel.sortBy.collectAsStateWithLifecycle()
+    val sortReverse by viewModel.sortReverse.collectAsStateWithLifecycle()
+
+    val requireAuth = rememberBiometricAuth()
+
+    val searchBackState = rememberNavigationEventState(currentInfo = NavigationEventInfo.None)
+    NavigationBackHandler(
+        state = searchBackState,
+        isBackEnabled = query.isNotEmpty(),
+        onBackCompleted = {
+            viewModel.setQuery("")
+        }
+    )
+
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(CoreR.string.superuser_grant)) },
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            if (query.isNotEmpty()) {
+                                viewModel.setQuery("")
+                            } else {
+                                onBack()
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(CoreR.string.back),
+                        )
+                    }
+                },
+                actions = {
+                    AppSortFilterActions(
+                        sortBy = sortBy,
+                        sortReverse = sortReverse,
+                        onSortByChanged = { viewModel.setSortBy(it) },
+                        onToggleSortReverse = { viewModel.toggleSortReverse() },
+                        showSystem = showSystem,
+                        showOS = showOS,
+                        onShowSystemChanged = { viewModel.setShowSystem(it) },
+                        onShowOSChanged = { viewModel.setShowOS(it) },
+                    )
+                },
+                scrollBehavior = scrollBehavior
+            )
+        }
+    ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            SearchInput(
+                query = query,
+                onQueryChange = viewModel::setQuery,
+                modifier = Modifier
+                    .widthIn(max = 720.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+            )
+
+            if (loading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = stringResource(CoreR.string.loading),
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        CircularProgressIndicator()
+                    }
+                }
+            } else {
+                val gridState = rememberLazyGridState()
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(320.dp),
+                    state = gridState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .nestedScroll(scrollBehavior.nestedScrollConnection)
+                        .verticalScrollbar(gridState, contentPadding = PaddingValues(vertical = 8.dp)),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(
+                        items = apps,
+                        key = { it.info.packageName },
+                        contentType = { "SuGrantAppCard" }
+                    ) { app ->
+                        SuGrantAppCard(
+                            app = app,
+                            onToggle = {
+                                requireAuth {
+                                    viewModel.toggleGrant(app)
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SearchInput(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    TextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = modifier,
+        placeholder = { Text(stringResource(CoreR.string.hide_filter_hint)) },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        },
+        trailingIcon = if (query.isNotEmpty()) {
+            {
+                IconButton(onClick = { onQueryChange("") }) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(CoreR.string.close),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else null,
+        shape = SearchBarDefaults.inputFieldShape,
+        singleLine = true,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
+        )
+    )
+}
+
+@Composable
+private fun SuGrantAppCard(
+    app: SuGrantAppState,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    SuperuserAppCard(
+        packageName = app.info.packageName,
+        title = app.info.label,
+        isSharedUid = app.info.isSharedUid,
+        checked = app.isGranted,
+        onCheckedChange = { onToggle() },
+        contentDescription = app.info.label,
+        modifier = modifier,
+        trailingContent = {
+            Checkbox(
+                checked = app.isGranted,
+                onCheckedChange = null
+            )
+        }
+    )
+}

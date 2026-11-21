@@ -41,23 +41,21 @@
     <string name="install_inactive_slot">Instalar na ralura inactiva (darréu del OTA)</string>
     <string name="install_inactive_slot_msg">¡El preséu va arrincar OBLIGATORIAMENTE na ralura inactiva dempués de reaniciar!\nUsa esta opción namás dempués d\'acabar l\'anovamientu per OTA.\n¿Quies siguir?</string>
     <string name="setup_title">Configuración adicional</string>
-    <string name="select_patch_file">Seleicionar y parchiar un ficheru</string>
-    <string name="patch_file_msg">Seleiciona una imaxe en bruto (*.img), un archivu d\'ODIN (*.tar) o un ficheru payload.bin (*.bin)</string>
     <string name="reboot_delay_toast">Reaniciando en 5 segundos…</string>
     <string name="flash_screen_title">Instalación</string>
     <!--Superuser-->
-    <string name="su_request_title">Solicitú de superusuariu</string>
-    <string name="touch_filtered_warning">Como una aplicación torga la solicitú de superusuariu, Magisk nun pue verificar la to rempuesta</string>
+
+
     <string name="deny">Negar</string>
-    <string name="prompt">Entrugar</string>
+
     <string name="grant">Conceder</string>
-    <string name="su_warning">Concede l\'accesu completu al preséu.\n¡Niégalu en casu de dulda!</string>
-    <string name="forever">Siempres</string>
-    <string name="once">Una vegada</string>
-    <string name="tenmin">10 minutos</string>
-    <string name="twentymin">20 minutos</string>
-    <string name="thirtymin">30 minutos</string>
-    <string name="sixtymin">60 minutos</string>
+
+
+
+
+
+
+
     <string name="su_allow_toast">A %1$s concediéronse-y los derechos de superusuariu</string>
     <string name="su_deny_toast">A %1$s negáronse-y los derechos de superusuariu</string>
     <string name="su_snack_grant">Concediéronse los derechos de superusuariu a %1$s</string>
@@ -118,10 +116,6 @@
     <string name="settings_dark_mode_dark">Escuridá</string>
     <string name="settings_download_path_title">Camín de les descargues</string>
     <string name="settings_download_path_message">Los ficheros van guardase en «%1$s»</string>
-    <string name="settings_hide_app_title">Esconder Magisk</string>
-    <string name="settings_hide_app_summary">Instala una aplicación intermedia con una ID y una etiqueta al debalu</string>
-    <string name="settings_restore_app_title">Restaurar el mou visible</string>
-    <string name="settings_restore_app_summary">Fai que l\'aplicación orixinal vuelva ser visible</string>
     <string name="language">Llingua</string>
     <string name="system_default">(Lo predeterminao)</string>
     <string name="settings_check_update_title">Comprobación d\'anovamientos</string>
@@ -139,32 +133,13 @@
     <string name="settings_hosts_title">Módulu «Systemless Hosts»</string>
     <string name="settings_hosts_summary">Un módulu pa les aplicaciones que bloquien anuncios</string>
     <string name="settings_hosts_toast">Amestóse\'l módulu «Systemless Hosts»</string>
-    <string name="settings_app_name_hint">Nome nuevu</string>
-    <string name="settings_app_name_helper">L\'aplicación va volver empaquetase con esti nome</string>
-    <string name="settings_app_name_error">El formatu nun ye válidu</string>
-    <string name="settings_su_app_adb">Aplicaciones y ADB</string>
-    <string name="settings_su_app">Namás aplicaciones</string>
-    <string name="settings_su_adb">Namás ADB</string>
-    <string name="settings_su_disable">Non</string>
-    <string name="settings_su_request_10">10 segundos</string>
-    <string name="settings_su_request_15">15 segundos</string>
-    <string name="settings_su_request_20">20 segundos</string>
-    <string name="settings_su_request_30">30 segundos</string>
-    <string name="settings_su_request_45">45 segundos</string>
-    <string name="settings_su_request_60">60 segundos</string>
-    <string name="superuser_access">Accesu de superusuariu</string>
-    <string name="auto_response">Rempuesta automática</string>
-    <string name="request_timeout">Tiempu d\'espera de les solicitúes</string>
     <string name="superuser_notification">Avisu de superusuariu</string>
-    <string name="settings_su_reauth_title">Volver autenticar dempués d\'anovar</string>
-    <string name="settings_su_reauth_summary">Vuelve pidir los permisos de superusuariu dempués d\'anovar les aplicaciones</string>
-    <string name="settings_su_tapjack_title">Proteición escontra\'l tapjacking</string>
-    <string name="settings_su_tapjack_summary">El diálogu de concesión de permisos de superusuariu nun respuende a la entrada mentanto lu torgue otra ventana o superposición</string>
+
+
     <string name="settings_su_auth_title">Autenticación d\'usuariu</string>
     <string name="settings_su_auth_summary">Pide l\'autenticación demientres les solicitúes de superusuariu</string>
     <string name="settings_su_auth_insecure">Nun se configuró nengún métodu d\'autenticación nel preséu</string>
     <string name="settings_customization">Personalización</string>
-    <string name="setting_add_shortcut_summary">Amiesta un atayu a la pantalla d\'aniciu en casu de que\'l nome y l\'iconu seyan difíciles de reconocer dempués d\'esconder l\'aplicación</string>
     <string name="settings_doh_title">DNS per HTTPS</string>
     <string name="settings_doh_description">Una igua alternativa pal envelenamientu de DNS en dalgunos países</string>
     <string name="settings_random_name_title">Nome de la salida aleatoriu</string>
@@ -200,12 +175,9 @@
     <string name="reboot">Reaniciar</string>
     <string name="close">Zarrar</string>
     <string name="release_notes">Notes de la versión</string>
-    <string name="flashing">Flaxando…</string>
-    <string name="running">Executando…</string>
-    <string name="done">¡Fecho!</string>
+    <string name="flashing">Flaxando…</string>    <string name="done">¡Fecho!</string>
     <string name="done_action">Completóse l\'aición de: %1$s</string>
     <string name="failure">¡Falló!</string>
-    <string name="hide_app_title">Escondiendo l\'aplicación Magisk…</string>
     <string name="open_link_failed_toast">Nun s\'atopó nenguna aplicación p\'abrir l\'enllaz</string>
     <string name="complete_uninstall">Desinstalar dafechu</string>
     <string name="restore_img">Restaurar les imáxenes</string>
@@ -223,14 +195,9 @@
     <string name="unsupport_system_app_msg">Esta aplicación nun se pue executar nel espaciu del sistema. Volvi instalala mas nel espaciu del usuariu.</string>
     <string name="unsupport_other_su_msg">Detectóse un binariu «su» que nun ye de Magisk. Quita cualesquier solución de root y/o volvi instalar Magisk.</string>
     <string name="unsupport_external_storage_msg">Magisk ta instaláu nel almacenamientu esternu. Movi l\'aplicación al almacenamientu internu, por favor.</string>
-    <string name="unsupport_nonroot_stub_msg">Magisk nun pue siguir funcionando nel mou escondíu darréu que se perdió\'l root. Restaura\'l mou visible de l\'aplicación.</string>
-    <string name="unsupport_nonroot_stub_title">@string/settings_restore_app_title</string>
     <string name="external_rw_permission_denied">Concede\'l permisu d\'almacenamientu p\'activar esta funcionalidá</string>
     <string name="post_notifications_denied">Concede\'l permisu de los avisos p\'activar esta función</string>
     <string name="install_unknown_denied">Permite la instalación d\'aplicaciones desconocíes p\'activar esta funcionalidá</string>
-    <string name="add_shortcut_title">Amestar un atayu a la pantalla d\'aniciu</string>
-    <string name="add_shortcut_msg">Dempués d\'esconder esta aplicación, el so nome ya iconu van ser difíciles de reconocer. ¿Quies amestar un atayu a la pantalla d\'aniciu?</string>
     <string name="app_not_found">Nun s\'atopó nenguna aplicación pa remanar esta aición</string>
     <string name="reboot_apply_change">Reanicia p\'aplicar los cambeos</string>
-    <string name="restore_app_confirmation">Esta aición va restaurar l\'aplicación orixinal y desanicia la intermedia. ¿De xuru que quies facelo?</string>
 </resources>

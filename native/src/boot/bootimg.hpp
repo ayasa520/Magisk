@@ -5,6 +5,8 @@
 #include <bitset>
 #include <rust/cxx.h>
 
+enum class FileFormat : uint8_t;
+
 /******************
  * Special Headers
  *****************/
@@ -39,15 +41,6 @@ struct blob_hdr {
     uint32_t offset;        /* offset in blob where this partition starts */
     uint32_t size;          /* Size of data */
     uint32_t version;       /* 0x00000001 */
-} __attribute__((packed));
-
-struct zimage_hdr {
-    uint32_t code[9];
-    uint32_t magic;      /* zImage magic */
-    uint32_t start;      /* absolute load/run zImage address */
-    uint32_t end;        /* zImage end address */
-    uint32_t endian;     /* endianness flag */
-    // There could be more fields, but we don't care
 } __attribute__((packed));
 
 /**************
@@ -451,11 +444,22 @@ dyn_img_hdr *clone() const override {   \
     return p;                           \
 };
 
+template <typename T, typename U>
+static T unwrap_ref(U *v) {
+    if constexpr (std::is_reference_v<T>) {
+        return *reinterpret_cast<std::remove_reference_t<T>*>(v);
+    } else {
+        return reinterpret_cast<T>(v);
+    }
+}
+
 #define __impl_val(name, hdr_name) \
 decltype(std::declval<const dyn_img_hdr>().name()) name() const override { return hdr_name->name; }
 
 #define __impl_var(name, hdr_name) \
-decltype(std::declval<dyn_img_hdr>().name()) name() override { return hdr_name->name; } \
+decltype(std::declval<dyn_img_hdr>().name()) name() override { \
+    return unwrap_ref<decltype(std::declval<dyn_img_hdr>().name())>(&hdr_name->name); \
+} \
 __impl_val(name, hdr_name)
 
 #define impl_cls(ver)  __impl_cls(dyn_img_##ver, boot_img_hdr_##ver)
@@ -598,6 +602,7 @@ enum {
     CHROMEOS_FLAG,
     DHTB_FLAG,
     SEANDROID_FLAG,
+    SIGNER_VER02_FLAG,
     LG_BUMP_FLAG,
     SHA256_FLAG,
     BLOB_FLAG,
@@ -609,6 +614,8 @@ enum {
     ZIMAGE_KERNEL,
     BOOT_FLAGS_MAX
 };
+
+struct ZImage;
 
 struct boot_img {
     // Memory map of the whole image
@@ -645,19 +652,7 @@ struct boot_img {
     const mtk_hdr *k_hdr = nullptr;
     const mtk_hdr *r_hdr = nullptr;
 
-    // The pointers/values after parse_image
-    // +---------------+
-    // | z_info.hdr    | z_info.hdr_sz
-    // +---------------+
-    // | kernel        | hdr->kernel_size()
-    // +---------------+
-    // | z_info.tail   |
-    // +---------------+
-    struct {
-        const zimage_hdr *hdr = nullptr;
-        uint32_t hdr_sz = 0;
-        byte_view tail{};
-    } z_info;
+    std::unique_ptr<ZImage> z_info;
 
     // AVB structs
     const AvbFooter *avb_footer = nullptr;
@@ -681,7 +676,6 @@ struct boot_img {
     ~boot_img();
 
     bool parse_image(const uint8_t *addr, FileFormat type);
-    void parse_zimage();
     const uint8_t *parse_hdr(const uint8_t *addr, FileFormat type);
     std::span<const vendor_ramdisk_table_entry_v4> vendor_ramdisk_tbl() const;
 

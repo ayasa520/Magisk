@@ -22,6 +22,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.content.getSystemService
+import com.topjohnwu.magisk.core.data.magiskdb.PolicyDao
 import com.topjohnwu.magisk.core.utils.LocaleSetting
 import com.topjohnwu.magisk.core.utils.RootUtils
 import com.topjohnwu.magisk.utils.APKInstall
@@ -44,11 +45,6 @@ fun Context.getBitmap(id: Int): Bitmap {
     drawable.draw(canvas)
     return bitmap
 }
-
-val Context.deviceProtectedContext: Context get() =
-    if (SDK_INT >= Build.VERSION_CODES.N) {
-        createDeviceProtectedStorageContext()
-    } else { this }
 
 fun Context.cachedFile(name: String) = File(cacheDir, name)
 
@@ -103,7 +99,8 @@ fun getProperty(key: String, def: String): String {
 @Throws(PackageManager.NameNotFoundException::class)
 fun PackageManager.getPackageInfo(uid: Int, pid: Int): PackageInfo? {
     val flag = PackageManager.MATCH_UNINSTALLED_PACKAGES
-    val pkgs = getPackagesForUid(uid) ?: throw PackageManager.NameNotFoundException()
+    val pkgs = getPackagesForUid(PolicyDao.denormalizeUid(uid))
+        ?: throw PackageManager.NameNotFoundException()
     if (pkgs.size > 1) {
         if (pid <= 0) {
             return null
@@ -111,13 +108,13 @@ fun PackageManager.getPackageInfo(uid: Int, pid: Int): PackageInfo? {
         // Try to find package name from PID
         val proc = RootUtils.getAppProcess(pid)
         if (proc == null) {
-            if (uid == Process.SHELL_UID) {
+            if (PolicyDao.normalizeUid(uid) == Process.SHELL_UID) {
                 // It is possible that some apps installed are sharing UID with shell.
                 // We will not be able to find a package from the active process list,
                 // because the client is forked from ADB shell, not any app process.
                 return getPackageInfo("com.android.shell", flag)
             }
-        } else if (uid == proc.uid) {
+        } else if (PolicyDao.normalizeUid(uid) == PolicyDao.normalizeUid(proc.uid)) {
             return getPackageInfo(proc.pkgList[0], flag)
         }
 

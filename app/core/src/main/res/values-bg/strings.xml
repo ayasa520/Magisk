@@ -44,24 +44,22 @@
     <string name="install_inactive_slot">Инсталиране в неактивен дял (след OTA)</string>
     <string name="install_inactive_slot_msg">Устройство ЗАДЪЛЖИТЕЛНО ще зареди от текущия неактивен дял при следващия рестарт.\nИзползвайте само при приключила инсталация на OTA.\nПродължаване?</string>
     <string name="setup_title">Допълнителни настройки</string>
-    <string name="select_patch_file">Избор и закърпване на файл</string>
-    <string name="patch_file_msg">Изберете образ (*.img) или архив на ODIN (*.tar)</string>
     <string name="reboot_delay_toast">Рестартиране след 5 секунди…</string>
     <string name="flash_screen_title">Инсталиране</string>
 
     <!--Superuser-->
-    <string name="su_request_title">Запитване за достъп</string>
-    <string name="touch_filtered_warning">Тъй като друго приложение закрива заявката за достъп до правата на суперпотребителя, Magisk не може да потвърди вашия отговор</string>
+
+
     <string name="deny">Отказ</string>
-    <string name="prompt">Запитване</string>
+
     <string name="grant">Разрешаване</string>
-    <string name="su_warning">Дава пълен достъп до устройството.\nОткажете, ако не сте сигурни.</string>
-    <string name="forever">Винаги</string>
-    <string name="once">Веднъж</string>
-    <string name="tenmin">10 мин.</string>
-    <string name="twentymin">20 мин.</string>
-    <string name="thirtymin">30 мин.</string>
-    <string name="sixtymin">60 мин.</string>
+
+
+
+
+
+
+
     <string name="su_allow_toast">%1$s получи достъп до суперпотребителя</string>
     <string name="su_deny_toast">%1$s не получи достъп до суперпотребителя</string>
     <string name="su_snack_grant">Достъп до суперпотребителя е разрешен на %1$s</string>
@@ -123,10 +121,6 @@
     <string name="settings_dark_mode_dark">Винаги тъмно</string>
     <string name="settings_download_path_title">Папка за изтегляния</string>
     <string name="settings_download_path_message">Файловете ще бъдат запазвани в %1$s</string>
-    <string name="settings_hide_app_title">Скриване на приложението на Magisk</string>
-    <string name="settings_hide_app_summary">Инсталира междинно приложение с произволен идестификатор и име</string>
-    <string name="settings_restore_app_title">Възстановяване на приложението на Magisk</string>
-    <string name="settings_restore_app_summary">Показва и възстановява оригиналното приложение</string>
     <string name="language">Език</string>
     <string name="system_default">(Според системата)</string>
     <string name="settings_check_update_title">Проверка за обновяване</string>
@@ -144,29 +138,10 @@
     <string name="settings_hosts_title">Безсистемни хостове</string>
     <string name="settings_hosts_summary">Поддръжка на безсистемни хостове, ползвани от приложения за спиране на реклами</string>
     <string name="settings_hosts_toast">Модулът за безсистемни хостове е добавен</string>
-    <string name="settings_app_name_hint">Ново име</string>
-    <string name="settings_app_name_helper">Приложението ще бъде пакетирано с това име</string>
-    <string name="settings_app_name_error">Форматът е недействителен</string>
-    <string name="settings_su_app_adb">Приложения и ADB</string>
-    <string name="settings_su_app">Само приложения</string>
-    <string name="settings_su_adb">Само ADB</string>
-    <string name="settings_su_disable">Изключен</string>
-    <string name="settings_su_request_10">10 секунди</string>
-    <string name="settings_su_request_15">15 секунди</string>
-    <string name="settings_su_request_20">20 секунди</string>
-    <string name="settings_su_request_30">30 секунди</string>
-    <string name="settings_su_request_45">45 секунди</string>
-    <string name="settings_su_request_60">60 секунди</string>
-    <string name="superuser_access">Достъп до суперпотребителя</string>
-    <string name="auto_response">Автоматичен отговор</string>
-    <string name="request_timeout">Време за запитване</string>
     <string name="superuser_notification">Известие за суперпотребителя</string>
-    <string name="settings_su_reauth_title">Повторно запитване след обновяване</string>
-    <string name="settings_su_reauth_summary">Повторно запитване за достъп до правата на суперпотребителя след обновяване на приложения</string>
-    <string name="settings_su_tapjack_title">Предпазване от измамно докосване</string>
-    <string name="settings_su_tapjack_summary">Прозорецът за достъп до суперпотребителя няма да реагира, докато е покрит от друг прозорец или слой</string>
+
+
     <string name="settings_customization">Приспособяване</string>
-    <string name="setting_add_shortcut_summary">Добавя красив пряк път на началния екран ако името или текущата икона на скритото приложение са трудни за разпознаване</string>
     <string name="settings_doh_title">DNS през HTTPS</string>
     <string name="settings_doh_description">Заобикаля „отравянето“ на DNS в някои държави</string>
 
@@ -206,7 +181,6 @@
     <string name="flashing">Инсталиране…</string>
     <string name="done">Готово!</string>
     <string name="failure">Грешка!</string>
-    <string name="hide_app_title">Скриване на приложението на Magisk…</string>
     <string name="open_link_failed_toast">Не е намерено приложение, с което препратката да бъде отворена</string>
     <string name="complete_uninstall">Премахване</string>
     <string name="restore_img">Възстановяване на образи</string>
@@ -224,15 +198,9 @@
     <string name="unsupport_system_app_msg">Приложението не се поддържа да работи като системно. Върнете го като потребителско.</string>
     <string name="unsupport_other_su_msg">Намерен е двоичен файл „su“, който не е от Magisk. Премахнете всички други решения за достъп до правата на суперпотребителя и/или инсталирайте Magisk отново.</string>
     <string name="unsupport_external_storage_msg">Magisk е инсталиран във външно хранилище. Преместете приложението във вътрешното хранилище.</string>
-    <string name="unsupport_nonroot_stub_msg">Скритото приложение на Magisk не може да продължи да работи, защото достъпът до правата на суперпотребителя е загубен. Възстановете оригиналното приложение.</string>
-    <string name="unsupport_nonroot_stub_title">@string/settings_restore_app_title</string>
     <string name="external_rw_permission_denied">За да използвате нази възможност, разрешете достъп до хранилището</string>
     <string name="post_notifications_denied">За да използвате нази възможност, разрешете достъп до известията</string>
     <string name="install_unknown_denied">За да използвате тази възможност, разрешете „инсталиране на неизвестни приложения“</string>
-    <string name="add_shortcut_title">Добавяне на пряк път на началния екран</string>
-    <string name="add_shortcut_msg">След скриване на приложението името или икона може да станат трудни за разпознаване. Желаете ли да бъде добаве красив пряк път на началния екран?</string>
     <string name="app_not_found">Не е намерено приложение, което да извърши действието</string>
     <string name="reboot_apply_change">Рестартиране за прилагане на промените</string>
-    <string name="restore_app_confirmation">По този начин ще възстановите скритото приложение в първоначалното му състояние. Това ли желаете да бъде направено?</string>
-
 </resources>

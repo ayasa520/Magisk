@@ -1,8 +1,3 @@
-# Parcelable
--keepclassmembers class * implements android.os.Parcelable {
-    public static final ** CREATOR;
-}
-
 # Kotlin
 -assumenosideeffects class kotlin.jvm.internal.Intrinsics {
 	public static void check*(...);
@@ -15,26 +10,11 @@
    private static ** getDebugMetadataAnnotation(...) return null;
 }
 
-# Stub
--keep class com.topjohnwu.magisk.core.App { <init>(java.lang.Object); }
--keepclassmembers class androidx.appcompat.app.AppCompatDelegateImpl {
-  boolean mActivityHandlesConfigFlagsChecked;
-  int mActivityHandlesConfigFlags;
-}
-
 # Strip Timber verbose and debug logging
 -assumenosideeffects class timber.log.Timber$Tree {
   public void v(**);
   public void d(**);
 }
-
-# Protobuf
--shrinkunusedprotofields
-
-# With R8 full mode generic signatures are stripped for classes that are not
-# kept. Suspend functions are wrapped in continuations where the type argument
-# is used.
--keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
 
 -dontwarn org.junit.**
 -dontwarn org.apache.**

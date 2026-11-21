@@ -5,18 +5,17 @@ import android.os.Build
 import androidx.annotation.Keep
 import androidx.core.net.toUri
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.topjohnwu.magisk.core.BuildConfig.APP_PACKAGE_NAME
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.download.DownloadNotifier
 import com.topjohnwu.magisk.core.download.DownloadProcessor
 import com.topjohnwu.magisk.core.ktx.cachedFile
 import com.topjohnwu.magisk.core.model.module.LocalModule
-import com.topjohnwu.magisk.core.tasks.AppMigration
 import com.topjohnwu.magisk.core.tasks.FlashZip
 import com.topjohnwu.magisk.core.tasks.MagiskInstaller
 import com.topjohnwu.magisk.core.utils.RootUtils
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
+import com.topjohnwu.superuser.ShellUtils
 import com.topjohnwu.superuser.nio.ExtendedFile
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.compress.archivers.zip.ZipFile
@@ -32,12 +31,18 @@ import java.io.PrintStream
 
 @Keep
 @RunWith(AndroidJUnit4::class)
-class Environment : BaseTest {
+class Environment : TestCommon {
 
     companion object {
         @BeforeClass
         @JvmStatic
-        fun before() = BaseTest.prerequisite()
+        fun before() = TestCommon.prerequisite()
+
+        // Whether we're running with live setup (patches through avd_setup.sh)
+        fun isLiveSetup(): Boolean {
+            val liveMarker = ShellUtils.fastCmd("echo \$MAGISKTMP/.magisk/live")
+            return RootUtils.fs.getFile(liveMarker).exists()
+        }
 
         // The kernel running on emulators < API 26 does not play well with
         // magic mount. Skip mount_test on those legacy platforms.
@@ -45,13 +50,14 @@ class Environment : BaseTest {
             return Build.VERSION.SDK_INT >= 26
         }
 
-        // It is possible that there are no suitable preinit partition to use
+        // It is possible that there are no suitable preinit partition to use.
+        // We also skip this test when running within a live setup.
         fun preinit(): Boolean {
-            return Shell.cmd("magisk --preinit-device").exec().isSuccess
+            return !isLiveSetup() && Shell.cmd("magisk --preinit-device").exec().isSuccess
         }
 
         fun lsposed(): Boolean {
-            return Build.VERSION.SDK_INT in 27..34
+            return Build.VERSION.SDK_INT in 28..37 && Const.CPU_ABI != "x86"
         }
 
         fun shamiko(): Boolean {
@@ -260,29 +266,5 @@ class Environment : BaseTest {
         setupInvalidZygiskModule(update)
         setupRemoveModule(root)
         setupUpgradeModule(root, update)
-    }
-
-    @Test
-    fun setupAppHide() {
-        runBlocking {
-            assertTrue(
-                "App hiding failed",
-                AppMigration.patchAndHide(
-                    context = appContext,
-                    label = "Settings",
-                    pkg = "repackaged.$APP_PACKAGE_NAME"
-                )
-            )
-        }
-    }
-
-    @Test
-    fun setupAppRestore() {
-        runBlocking {
-            assertTrue(
-                "App restoration failed",
-                AppMigration.restoreApp(appContext)
-            )
-        }
     }
 }

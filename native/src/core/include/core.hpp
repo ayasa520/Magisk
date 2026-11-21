@@ -1,9 +1,7 @@
 #pragma once
 
-#include <sys/socket.h>
 #include <string>
 #include <atomic>
-#include <functional>
 
 #include <base.hpp>
 
@@ -17,7 +15,6 @@
 #define to_user_id(uid) (uid / AID_USER_OFFSET)
 
 #define SDK_INT      (MagiskD::Get().sdk_int())
-#define APP_DATA_DIR (SDK_INT >= 24 ? "/data/user_de" : "/data/user")
 
 inline int connect_daemon(RequestCode req) {
     return connect_daemon(req, false);
@@ -33,6 +30,15 @@ struct ModuleInfo;
 const char *get_magisk_tmp();
 void unlock_blocks();
 bool check_key_combo();
+int fork_dont_care();
+int fork_no_orphan();
+int switch_mnt_ns(int pid);
+void init_argv0(int argc, char **argv);
+void set_nice_name(Utf8CStr name);
+
+using thread_entry = void *(*)(void *);
+extern "C" int new_daemon_thread(thread_entry entry, void *arg = nullptr);
+
 template<typename T> requires(std::is_trivially_copyable_v<T>)
 T read_any(int fd) {
     T val;
@@ -63,7 +69,6 @@ bool read_vector(int fd, std::vector<T> &vec) {
 }
 
 // Scripting
-void install_apk(Utf8CStr apk);
 void uninstall_pkg(Utf8CStr pkg);
 void exec_common_scripts(Utf8CStr stage);
 void exec_module_scripts(Utf8CStr stage, const rust::Vec<ModuleInfo> &module_list);

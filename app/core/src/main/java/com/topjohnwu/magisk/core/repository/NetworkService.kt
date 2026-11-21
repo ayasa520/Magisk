@@ -7,10 +7,12 @@ import com.topjohnwu.magisk.core.Config.Value.CUSTOM_CHANNEL
 import com.topjohnwu.magisk.core.Config.Value.DEBUG_CHANNEL
 import com.topjohnwu.magisk.core.Config.Value.DEFAULT_CHANNEL
 import com.topjohnwu.magisk.core.Config.Value.STABLE_CHANNEL
+import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.data.GithubApiServices
 import com.topjohnwu.magisk.core.data.RawUrl
 import com.topjohnwu.magisk.core.ktx.dateFormat
+import com.topjohnwu.magisk.core.model.GooglebookRecoveryJson
 import com.topjohnwu.magisk.core.model.Release
 import com.topjohnwu.magisk.core.model.ReleaseAssets
 import com.topjohnwu.magisk.core.model.UpdateInfo
@@ -43,6 +45,14 @@ class NetworkService(
 
     suspend fun fetchUpdate(version: Int) = safe {
         findRelease { it.versionCode == version }.asInfo()
+    }
+
+    suspend fun fetchGooglebookRecovery() = safe {
+        raw.fetchGooglebookRecoveryJson(Const.Url.GOOGLEBOOK_RECOVERY_URL)
+    }
+
+    suspend fun fetchPixelFactoryImages() = safe {
+        raw.fetchPixelFactoryImages(Const.Url.PIXEL_FACTORY_IMAGES_URL)
     }
 
     // Keep going through all release pages until we find a match

@@ -56,8 +56,8 @@ fix_env() {
   chown -R 0:0 $MAGISKBIN
 }
 
-# $1 = install dir
-# $2 = boot partition
+# $1 = APK path
+# $2 = system install (optional)
 install_addond(){
     local installDir="$MAGISKBIN"
     local AppApkPath="$1"
@@ -96,9 +96,12 @@ install_addond(){
     mount -o ro,remount /system
 }
 
+# $1 = install dir
+# $2 = boot partition
+# $3 = APK path
 direct_install() {
   echo "- Flashing new boot image"
-  flash_image $1/new-boot.img $2
+  flash_image "$1/new-boot.img" "$2"
   case $? in
     1)
       echo "! Insufficient partition size"
@@ -134,11 +137,10 @@ restore_imgs() {
   flash_image $BACKUPDIR/boot.img.gz $1
 }
 
-# $1 = path to bootctl executable
 post_ota() {
   cd /data/adb
-  cp -f $1 bootctl
-  rm -f $1
+  cp -f $MAGISKBIN/bootctl bootctl
+  rm -f $MAGISKBIN/bootctl
   chmod 755 bootctl
   if ! ./bootctl hal-info; then
     rm -f bootctl
@@ -162,11 +164,12 @@ adb_pm_install() {
   local tmp=/data/local/tmp/temp.apk
   cp -f "$1" $tmp
   chmod 644 $tmp
-  su 2000 -c pm install -g $tmp || pm install -g $tmp || su 1000 -c pm install -g $tmp
+  local cmd="pm install --user current -g $tmp"
+  su 2000 -c $cmd || $cmd || su 1000 -c $cmd
   local res=$?
   rm -f $tmp
   if [ $res = 0 ]; then
-    appops set "$2" REQUEST_INSTALL_PACKAGES allow
+    appops set --user current "$2" REQUEST_INSTALL_PACKAGES allow
   fi
   return $res
 }
@@ -191,20 +194,16 @@ check_boot_ramdisk() {
 
 check_encryption() {
   if $ISENCRYPTED; then
-    if [ $SDK_INT -lt 24 ]; then
-      CRYPTOTYPE="block"
-    else
-      # First see what the system tells us
-      CRYPTOTYPE=$(getprop ro.crypto.type)
-      if [ -z $CRYPTOTYPE ]; then
-        # If not mounting through device mapper, we are FBE
-        if grep ' /data ' /proc/mounts | grep -qv 'dm-'; then
-          CRYPTOTYPE="file"
-        else
-          # We are either FDE or metadata encryption (which is also FBE)
-          CRYPTOTYPE="block"
-          grep -q ' /metadata ' /proc/mounts && CRYPTOTYPE="file"
-        fi
+    # First see what the system tells us
+    CRYPTOTYPE=$(getprop ro.crypto.type)
+    if [ -z $CRYPTOTYPE ]; then
+      # If not mounting through device mapper, we are FBE
+      if grep ' /data ' /proc/mounts | grep -qv 'dm-'; then
+        CRYPTOTYPE="file"
+      else
+        # We are either FDE or metadata encryption (which is also FBE)
+        CRYPTOTYPE="block"
+        grep -q ' /metadata ' /proc/mounts && CRYPTOTYPE="file"
       fi
     fi
   else
@@ -221,6 +220,134 @@ run_action() {
   cd "/data/adb/modules/$MODID"
   sh ./action.sh
   local RES=$?
+  cd /
+  return $RES
+}
+
+# Patch the vendor_boot image of Aluminium OS recovery images to
+# disable data wipe and bypass AVB hash verification of boot partitions.
+# All temporary files are always removed regardless of the result.
+# $1 = install dir
+# $2 = vendor_boot image (absolute path), patched in-place
+patch_al_vendor_boot() {
+  cd "$1" || return 1
+
+  # Run in a subshell so errors can exit early without skipping cleanup
+  (
+  IMG=$2
+  CPIO=vendor_ramdisk/ramdisk.cpio
+  PS=system/bin/partition-script.sh
+  CLI=system/bin/avb_verify_cli
+
+  # Return value 3 indicates a vendor_boot image
+  ./magiskboot unpack "$IMG"
+  if [ $? -ne 3 ]; then
+    echo "! Invalid vendor_boot image"
+    exit 1
+  fi
+
+  if [ ! -f $CPIO ]; then
+    echo "! Unable to find vendor ramdisk"
+    exit 1
+  fi
+
+  if ./magiskboot cpio $CPIO "exists $CLI.real"; then
+    echo "! vendor_boot image is already patched"
+    exit 1
+  fi
+
+  if ! ./magiskboot cpio $CPIO "exists $PS" || ! ./magiskboot cpio $CPIO "exists $CLI"; then
+    echo "! Unsupported vendor ramdisk"
+    exit 1
+  fi
+
+  # Disable userdata wipe and TPM clear in partition-script.sh
+  echo "- Patching $PS"
+  ./magiskboot cpio $CPIO "extract $PS partition-script.sh"
+  sed -e 's/^\([[:space:]]*\)write_base_table()[[:space:]]*{/\1orig_write_base_table() {/' \
+  -e 's/^\([[:space:]]*\)load_base_vars()[[:space:]]*{/\1orig_load_base_vars() {/' \
+  partition-script.sh > partition-script.sh.new
+  if ! grep -q 'orig_write_base_table() {' partition-script.sh.new || ! grep -q 'orig_load_base_vars() {' partition-script.sh.new; then
+    echo "! Unable to patch $PS"
+    exit 1
+  fi
+  cat << 'EOF' >> partition-script.sh.new
+# ==============================================================================
+# Custom partition-script.sh Overrides (Disable Data Wipe)
+# ==============================================================================
+
+write_base_table() {
+  orig_write_base_table "$@"
+}
+
+load_base_vars() {
+  orig_load_base_vars
+
+  # recovery_media aborts if PARTITION_NUM_USERDATA or PARTITION_NUM_METADATA
+  # are unset, and normally formats metadata (mke2fs) and zeroes the first 2 MiB
+  # of userdata. Redirect both variables to the unused ota_recovery_b partition
+  # so those wipes hit ota_recovery_b, leaving the real userdata and metadata
+  # (which stores the FBE encryption key) untouched.
+  PARTITION_NUM_USERDATA="${PARTITION_NUM_OTA_RECOVERY_B}"
+  PARTITION_NUM_METADATA="${PARTITION_NUM_OTA_RECOVERY_B}"
+
+  # Unset PARTITION_NUM_PERSIST so its partition number in INSTALLABLE_PARTITIONS
+  # is not resolved by name_map and is skipped instead of being overwritten with
+  # factory persist.img.
+  unset PARTITION_NUM_PERSIST
+
+  # Unset security partition numbers so the post-install security reset phase
+  # skips zeroing desktop_security_persist and desktop_security_storage.
+  unset PARTITION_NUM_DESKTOP_SECURITY_PERSIST
+  unset PARTITION_NUM_DESKTOP_SECURITY_STORAGE
+
+  # Hold /dev/tpm0 open in the background. The Linux TPM character driver
+  # enforces single-open exclusivity (-EBUSY), preventing recovery_media from
+  # clearing the TPM or resetting Trusty MACs (treated as a non-fatal warning)
+  # and preserving hardware-backed FBE encryption keys.
+  sleep 86400 </dev/tpm0 >/dev/null 2>&1 &
+}
+EOF
+
+  # Collect all cpio commands and run them in one go
+  set -- "add 0755 $PS partition-script.sh.new"
+
+  # Remove pinned recovery media public keys
+  for KEY in system vendor; do
+    KEY=$KEY/etc/security/avb/recovery_media_public_key.bin
+    if ./magiskboot cpio $CPIO "exists $KEY"; then
+      echo "- Removing $KEY"
+      set -- "$@" "rm $KEY"
+    fi
+  done
+
+  # Wrap avb_verify_cli to drop the trusted public key argument and
+  # strip all Hash descriptors from its output, so boot partitions are
+  # flashed without verification and vbmeta is left untouched
+  echo "- Wrapping $CLI"
+  cat << 'EOF' > avb_verify_cli
+#!/system/bin/sh
+out="$(/system/bin/avb_verify_cli.real "$1" "$2")" || exit $?
+printf '%s\n' "$out" | sed -E 's/\{"Hash":\{[^}]*\}\},?//g; s/,\]/]/g'
+EOF
+
+  set -- "$@" "mv $CLI $CLI.real" "add 0755 $CLI avb_verify_cli"
+  if ! ./magiskboot cpio $CPIO "$@"; then
+    echo "! Unable to patch vendor ramdisk"
+    exit 1
+  fi
+
+  echo "- Repacking vendor_boot image"
+  if ! ./magiskboot repack "$IMG" new-vendor_boot.img; then
+    echo "! Unable to repack vendor_boot image"
+    exit 1
+  fi
+  cat new-vendor_boot.img > "$IMG"
+  )
+  local RES=$?
+
+  ./magiskboot cleanup
+  rm -f new-vendor_boot.img partition-script.sh partition-script.sh.new avb_verify_cli
   cd /
   return $RES
 }
@@ -353,14 +480,53 @@ installer_cleanup(){
 }
 
 direct_install_system(){
+    local MIRRORDIR=/
+    $BOOTMODE && MIRRORDIR="/proc/$$/attr"
+    local system_mirror_mounted=false
+    local replacing_system_install=false
+    local patched_policy=
+
+    # Keep the mirror mounted throughout rollback so cleanup can only touch
+    # the same partition as the installer. Failures before replacing an
+    # installation must leave existing files alone.
+    if ! install_system_files "$1"; then
+        if $replacing_system_install; then
+            cleanup_system_installation
+        fi
+        if [ -n "$patched_policy" ]; then
+            restore_from_bak "$patched_policy"
+        fi
+        $system_mirror_mounted && installer_cleanup
+        return 1
+    fi
+
+    $system_mirror_mounted && installer_cleanup
+    return 0
+}
+
+install_system_files(){
     print_title "Magisk Delta (System Mode)" "by HuskyDG"
     print_title "Powered by Magisk"
     api_level_arch_detect
     local INSTALLDIR="$1"
+    local magisk_applet=magisk
+    if [ "$IS64BIT" == true ] && [ -f "$INSTALLDIR/magisk32" ]; then
+        magisk_applet="magisk magisk32"
+    fi
+
+    # Upstream no longer packages a stub APK. Validate the native files
+    # before remounting or removing a previous system installation.
+    local magisk
+    for magisk in $magisk_applet magiskpolicy magiskinit; do
+        if [ ! -r "$INSTALLDIR/$magisk" ]; then
+            ui_print "! Missing system installer file: $magisk"
+            return 1
+        fi
+    done
 
     ui_print "- Remount system partition as read-write"
     # Use kernel trick to clean up mirrors automatically when installer completed
-    local MIRRORDIR="/proc/$$/attr" ROOTDIR SYSTEMDIR VENDORDIR
+    local ROOTDIR SYSTEMDIR VENDORDIR ODM_DIR
 
     ROOTDIR="$MIRRORDIR/system_root"
     SYSTEMDIR="$MIRRORDIR/system"
@@ -373,6 +539,7 @@ direct_install_system(){
         umount -l "/proc/$$/attr"
         # setup mirrors to get the original content
         mount -t tmpfs -o 'mode=0755' tmpfs "$MIRRORDIR" || return 1
+        system_mirror_mounted=true
         if is_rootfs; then
             ROOTDIR=/
             force_bind_mount "/" "$ROOTDIR" || return 1
@@ -416,11 +583,6 @@ direct_install_system(){
             ln -fs ./system_root/odm "$ODM_DIR"
         fi
     else
-        local MIRRORDIR="/" ROOTDIR SYSTEMDIR VENDORDIR
-        ROOTDIR="$MIRRORDIR/system_root"
-        SYSTEMDIR="$MIRRORDIR/system"
-        VENDORDIR="$MIRRORDIR/vendor"
-        ODM_DIR="$MIRRORDIR/odm"
         ui_print "- Mount system partitions as read-write..."
         remount_check rw "$ROOTDIR" 0 || { warn_system_ro; return 1; }
         remount_check rw "$SYSTEMDIR" 0 || { warn_system_ro; return 1; }
@@ -449,20 +611,16 @@ direct_install_system(){
         rm -rf "$checkfile"
     }
     cleanup_system_installation || return 1
-
-    local magisk_applet=magisk
-    if [ "$IS64BIT" == true ] && [ -f "$INSTALLDIR/magisk32" ]; then
-        magisk_applet="magisk magisk32"
-    fi
+    replacing_system_install=true
 
     ui_print "- Copy files to system partition"
     mkdir -p "$MIRRORDIR$MAGISKSYSTEMDIR" || return 1
-    for magisk in $magisk_applet magiskpolicy magiskinit stub.apk; do
-        cat "$INSTALLDIR/$magisk" >"$MIRRORDIR$MAGISKSYSTEMDIR/$magisk" || { ui_print "! Unable to write Magisk binaries to system"; return 1; }
+    for magisk in $magisk_applet magiskpolicy magiskinit; do
+        cat "$INSTALLDIR/$magisk" >"$MIRRORDIR$MAGISKSYSTEMDIR/$magisk" || { ui_print "! Unable to write system installer file: $magisk"; return 1; }
     done
-    echo -e "SYSTEMMODE=true\nRECOVERYMODE=false" >"$MIRRORDIR$MAGISKSYSTEMDIR/config"
+    printf 'SYSTEMMODE=true\nRECOVERYMODE=false\n' >"$MIRRORDIR$MAGISKSYSTEMDIR/config" || return 1
     chcon -R u:object_r:system_file:s0 "$MIRRORDIR$MAGISKSYSTEMDIR"
-    chmod -R 700 "$MIRRORDIR$MAGISKSYSTEMDIR"
+    chmod -R 700 "$MIRRORDIR$MAGISKSYSTEMDIR" || return 1
 
     if [ "$API" -gt 24 ]; then
 
@@ -495,10 +653,11 @@ direct_install_system(){
                     ui_print "- Target sepolicy is $sepol"
                     backup_restore "$MIRRORDIR$sepol" || { ui_print "! Backup failed"; return 1; }
                     # copy file to cache
-                    cp -af "$MIRRORDIR$sepol" "$INSTALLDIR/sepol.in"
-                    if ! "$INSTALLDIR/magiskinit" --patch-sepol "$INSTALLDIR/sepol.in" "$INSTALLDIR/sepol.out" || ! cp -af "$INSTALLDIR/sepol.out" "$MIRRORDIR$sepol"; then
+                    patched_policy="$MIRRORDIR$sepol"
+                    if ! cp -af "$patched_policy" "$INSTALLDIR/sepol.in" \
+                        || ! "$INSTALLDIR/magiskinit" --patch-sepol "$INSTALLDIR/sepol.in" "$INSTALLDIR/sepol.out" \
+                        || ! cp -af "$INSTALLDIR/sepol.out" "$patched_policy"; then
                         ui_print "! Unable to patch sepolicy file"
-                        restore_from_bak "$MIRRORDIR$sepol"
                         return 1
                     fi
                     ui_print "- Patching sepolicy file success!"
@@ -508,28 +667,25 @@ direct_install_system(){
         }
         ui_print "- Add init boot script"
         {
-            hijackrc="$MIRRORDIR/system/etc/init/magisk.rc" 
+            local hijackrc="$MIRRORDIR/system/etc/init/magisk.rc"
             if [ -f "$MIRRORDIR/system/etc/init/bootanim.rc" ]; then
                 backup_restore "$MIRRORDIR/system/etc/init/bootanim.rc" && hijackrc="$MIRRORDIR/system/etc/init/bootanim.rc"
             fi
         }
-        echo "$(magiskrc "$MAGISKTMP_TO_INSTALL")" >>"$hijackrc" || return 1
+        magiskrc "$MAGISKTMP_TO_INSTALL" >>"$hijackrc" || return 1
     fi
 
     ui_print "[*] Reflash your ROM if your ROM is unable to start"
-    ui_print "    and do not use this method to install Magisk" 
-
-    $BOOTMODE && installer_cleanup
-    true
+    ui_print "    and do not use this method to install Magisk"
     return 0
 }
 
-
-
+# $1 = install dir
+# $2 = APK path
 xdirect_install_system() {
-  direct_install_system "$@" || { cleanup_system_installation; installer_cleanup; return 1; }
+  direct_install_system "$1" || return 1
   fix_env "$1"
-  install_addond "$3" "true"
+  install_addond "$2" "true"
   run_migrations
   return 0
 }
@@ -547,10 +703,15 @@ app_init() {
   get_flags >/dev/null
   run_migrations >/dev/null
   check_encryption
+  # The running boot image records its stock hash in the ramdisk config.
+  # Migration handles backups separately and does not expose that hash.
   BOOTIMAGE_PATCHED=false
-  [ ! -z "$SHA1" ] && BOOTIMAGE_PATCHED=true
+  if [ -n "$MAGISKTMP" ] && [ -n "$(grep_prop SHA1 "$MAGISKTMP/.magisk/config")" ]; then
+    BOOTIMAGE_PATCHED=true
+  fi
 
   # Dump variables
+  printvar BOOTIMAGE_PATCHED
   printvar SLOT
   printvar SYSTEM_AS_ROOT
   printvar RAMDISKEXIST

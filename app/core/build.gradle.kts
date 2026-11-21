@@ -23,7 +23,6 @@ android {
         buildConfigField("String", "APP_PACKAGE_NAME", "\"com.topjohnwu.magisk\"")
         buildConfigField("int", "APP_VERSION_CODE", "${Config.versionCode}")
         buildConfigField("String", "APP_VERSION_NAME", "\"${Config.version}\"")
-        buildConfigField("int", "STUB_VERSION", Config.stubVersion)
         consumerProguardFile("proguard-rules.pro")
     }
 
@@ -38,12 +37,10 @@ android {
 }
 
 dependencies {
-    api(project(":shared"))
     coreLibraryDesugaring(libs.jdk.libs)
 
     api(libs.timber)
     api(libs.markwon.core)
-    implementation(libs.bcpkix)
     implementation(libs.commons.compress)
     implementation(libs.xz)
     implementation(libs.wire.runtime)

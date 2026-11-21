@@ -1,88 +1,81 @@
 package com.topjohnwu.magisk.ui.module
 
-import android.view.MenuItem
-import androidx.databinding.ObservableArrayList
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.topjohnwu.magisk.R
 import com.topjohnwu.magisk.arch.BaseViewModel
-import com.topjohnwu.magisk.core.ktx.synchronized
 import com.topjohnwu.magisk.core.ktx.timeFormatStandard
 import com.topjohnwu.magisk.core.ktx.toTime
-import com.topjohnwu.magisk.core.utils.MediaStoreUtils
-import com.topjohnwu.magisk.core.utils.MediaStoreUtils.outputStream
-import com.topjohnwu.magisk.events.SnackbarEvent
-import com.topjohnwu.magisk.ui.flash.ConsoleItem
-import com.topjohnwu.superuser.CallbackList
-import com.topjohnwu.superuser.Shell
+import com.topjohnwu.magisk.terminal.TerminalEmulator
+import com.topjohnwu.magisk.terminal.runSuCommand
+import com.topjohnwu.magisk.terminal.shellQuoted
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
-import java.io.IOException
 
-class ActionViewModel : BaseViewModel() {
+class ActionViewModel(private val savedState: SavedStateHandle) : BaseViewModel() {
 
     enum class State {
         RUNNING, SUCCESS, FAILED
     }
 
-    private val _state = MutableLiveData(State.RUNNING)
-    val state: LiveData<State> get() = _state
+    /**
+     * Whether the action was started before the process died. The action and its output only
+     * lived in memory and are gone, so it must never run again: repeating it may not be safe.
+     */
+    val isInterrupted = savedState.get<Boolean>(KEY_STARTED) == true
 
-    val items = ObservableArrayList<ConsoleItem>()
-    lateinit var args: ActionFragmentArgs
+    private val _actionState = MutableStateFlow(State.RUNNING)
+    val actionState: StateFlow<State> = _actionState.asStateFlow()
 
-    private val logItems = mutableListOf<String>().synchronized()
-    private val outItems = object : CallbackList<String>() {
-        override fun onAddElement(e: String?) {
-            e ?: return
-            items.add(ConsoleItem(e))
-            logItems.add(e)
-        }
+    var actionDir: String = ""
+    var actionName: String = ""
+
+    val emulator = TerminalEmulator(
+        columns = 256,
+        rows = 40,
+        cellWidthPixels = 0,
+        cellHeightPixels = 0,
+        transcriptRows = null,
+    )
+
+    private val terminalReady = CompletableDeferred<Unit>()
+
+    /** Called by the UI once the terminal has been sized to its viewport. */
+    fun onTerminalResized() {
+        terminalReady.complete(Unit)
     }
 
-    fun startRunAction() = viewModelScope.launch {
-        onResult(withContext(Dispatchers.IO) {
-            try {
-                Shell.cmd("run_action \'${args.id}\'")
-                    .to(outItems, logItems)
-                    .exec().isSuccess
-            } catch (e: IOException) {
-                Timber.e(e)
-                false
+    fun startRunAction() {
+        savedState[KEY_STARTED] = true
+        viewModelScope.launch {
+            // Start the command with the real terminal size
+            terminalReady.await()
+            val columns = emulator.mColumns
+            val rows = emulator.mRows
+            val success = withContext(Dispatchers.IO) {
+                runSuCommand(
+                    emulator, columns, rows,
+                    "cd ${"/data/adb/modules/$actionDir".shellQuoted()} && sh ./action.sh"
+                )
             }
-        })
-    }
 
-    private fun onResult(success: Boolean) {
-        _state.value = if (success) State.SUCCESS else State.FAILED
-    }
-
-    fun onMenuItemClicked(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_save -> savePressed()
+            _actionState.value = if (success) State.SUCCESS else State.FAILED
         }
-        return true
     }
 
-    private fun savePressed() = withExternalRW {
-        viewModelScope.launch(Dispatchers.IO) {
-            val name = "%s_action_log_%s.log".format(
-                args.name,
-                System.currentTimeMillis().toTime(timeFormatStandard)
-            )
-            val file = MediaStoreUtils.getFile(name)
-            file.uri.outputStream().bufferedWriter().use { writer ->
-                synchronized(logItems) {
-                    logItems.forEach {
-                        writer.write(it)
-                        writer.newLine()
-                    }
-                }
-            }
-            SnackbarEvent(file.toString()).publish()
-        }
+    fun saveLog() {
+        val name = "%s_action_log_%s.log".format(
+            actionName,
+            System.currentTimeMillis().toTime(timeFormatStandard)
+        )
+        saveLogFile(name) { it.write(emulator.screen.transcriptText) }
+    }
+
+    companion object {
+        private const val KEY_STARTED = "started"
     }
 }

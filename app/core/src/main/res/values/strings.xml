@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!--Sections-->
     <string name="modules">Modules</string>
@@ -16,25 +16,19 @@
     <string name="loading">Loading…</string>
     <string name="update">Update</string>
     <string name="not_available">N/A</string>
+    <string name="not_installed">Not Installed</string>
     <string name="hide">Hide</string>
-    <string name="restore">Restore</string>
     <string name="home_package">Package</string>
     <string name="home_app_title">App</string>
-    <string name="home_core_title">Core</string>
     <string name="reinstall">Reinstall</string>
     <string name="home_notice_content">WARNING! You are using an unofficial version of Magisk that is not officially supported by the Magisk author. This version may contain unstable modifications that could harm your device or compromise your security. Please do not report any issues or request any help to official Magisk channels.</string>
     <string name="home_support_title">Support Us</string>
     <string name="home_follow_title">Follow Us</string>
     <string name="home_item_source">Source</string>
     <string name="home_support_content">Magisk is, and always will be, free, and open source. However, you can show us that you care by making a donation.</string>
-    <string name="donate">Donate</string>
-    <string name="documents">Documents</string>
-    <string name="report_bugs">Report Bugs</string>
-    <string name="home_status_title">Status</string>
     <string name="home_installed_version">Installed</string>
     <string name="home_latest_version">Latest</string>
     <string name="invalid_update_channel">Invalid update channel</string>
-    <string name="uninstall">Uninstall</string>
     <string name="uninstall_magisk_title">Uninstall Magisk</string>
     <string name="uninstall_magisk_msg">All modules will be disabled/removed!\nRoot will be removed!\nAny internal storage unencrypted through the use of Magisk will be re-encrypted!</string>
 
@@ -48,36 +42,32 @@
     <string name="install_start">Let\'s go</string>
     <string name="manager_download_install">Press to download and install</string>
     <string name="direct_install">Direct install (Recommended)</string>
-    <string name="direct_install_system">Direct Install to System</string>
-    <string name="direct_install_summary">Directly install Magisk to the boot partition</string>
+    <!-- Use the English fallback for locales without this fork-specific label. -->
+    <string name="direct_install_system" tools:ignore="MissingTranslation">Direct Install to System</string>
     <string name="install_inactive_slot">Install to inactive slot (After OTA)</string>
-    <string name="install_inactive_slot_summary">Install to the inactive slot after an OTA update</string>
-    <string name="select_patch_file_summary">Patch a raw image, ODIN tar, or payload.bin file</string>
     <string name="install_inactive_slot_msg">Your device will be FORCED to boot to the current inactive slot after a reboot!\nOnly use this option after OTA is done.\nContinue?</string>
     <string name="setup_title">Additional setup</string>
-    <string name="select_patch_file">Select and patch a file</string>
-    <string name="patch_file_msg">Select a raw image (*.img) or an ODIN tarfile (*.tar) or a payload.bin (*.bin)</string>
-    <string name="download_patch_file">Download and patch a file</string>
+    <string name="patch_image">Patch firmware / image</string>
+    <string name="patch_image_msg">Supported file formats and outputs:\n• <b>Boot / recovery image (.img)</b>: patches boot, init_boot, or recovery and outputs a patched .img\n• <b>OTA / factory package (.zip, payload.bin)</b>: extracts the target image and outputs a patched .img\n• <b>Odin firmware (.tar)</b>: patches the image inside and outputs a patched .tar\n• <b>Googlebook recovery image (.bin, .zip)</b>: outputs a patched .bin or flashes to a USB drive</string>
+    <string name="select_from_storage">Select from storage</string>
     <string name="download_dialog_title">Enter image URL</string>
     <string name="download_dialog_msg">Full OTA image or factory image</string>
+    <string name="download_googlebook_recovery_image">Download latest Googlebook recovery image</string>
+    <string name="download_pixel_factory_image">Download latest Pixel factory image</string>
+    <string name="output_destination">Output destination</string>
+    <string name="save_to_file">Save to file</string>
+    <string name="no_usb_drive_found">No USB drive detected. Insert a USB flash drive.</string>
+    <string name="usb_overwrite_warning">All data on the selected USB drive will be permanently erased.</string>
     <string name="reboot_delay_toast">Rebooting in 5 seconds…</string>
     <string name="flash_screen_title">Installation</string>
 
     <!--Superuser-->
-    <string name="su_request_title">This app is requesting root permission. Grants full access to your device. Deny if you\'re not sure!</string>
-    <string name="touch_filtered_warning">Because an app is obscuring a Superuser request, Magisk can\'t verify your response.</string>
     <string name="deny">Deny</string>
-    <string name="prompt">Prompt</string>
     <string name="restrict">Restrict</string>
     <string name="grant">Grant</string>
-    <string name="su_warning">Grants full access to your device.\nDeny if you\'re not sure!</string>
-    <string name="forever">Forever</string>
-    <string name="once">Once</string>
-    <string name="tenmin">10 mins</string>
-    <string name="twentymin">20 mins</string>
-    <string name="thirtymin">30 mins</string>
-    <string name="sixtymin">60 mins</string>
+    <string name="superuser_grant">Grant Superuser</string>
     <string name="su_allow_toast">%1$s was granted Superuser rights</string>
+    <string name="su_legacy_cmd">Warning: Unsupported command line detected</string>
     <string name="su_deny_toast">%1$s was denied Superuser rights</string>
     <string name="su_snack_grant">Superuser rights of %1$s are granted</string>
     <string name="su_snack_deny">Superuser rights of %1$s are denied</string>
@@ -90,9 +80,7 @@
     <string name="toast">Toast</string>
     <string name="notification">Notification</string>
     <string name="none">None</string>
-    <string name="su_notification_channel">Superuser Notifications</string>
-    <string name="su_notification_granted_title">Superuser Granted</string>
-    <string name="su_notification_denied_title">Superuser Denied</string>
+    <string name="back">Back</string>
     <string name="superuser_toggle_notification">Notifications</string>
     <string name="superuser_toggle_revoke">Revoke</string>
     <string name="superuser_policy_none">No apps have asked for Superuser permission yet.</string>
@@ -101,14 +89,9 @@
     <string name="log_data_none">You\'re log-free. Try using your root apps more.</string>
     <string name="log_data_magisk_none">Magisk logs are empty, that\'s weird.</string>
     <string name="menuSaveLog">Save log</string>
-    <string name="menuClearLog">Clear log now</string>
+    <string name="menuClearLog">Clear log</string>
     <string name="logs_cleared">Log successfully cleared</string>
-    <string name="save_log">Save log</string>
-    <string name="clear_log">Clear log</string>
-    <string name="back">Back</string>
-    <string name="superuser_setting">Superuser Setting</string>
-    <string name="enabled">Enabled</string>
-    <string name="disabled">Disabled</string>
+    <string name="log_save_failed">Failed to save the log</string>
     <string name="pid">PID: %1$d</string>
     <string name="target_uid">Target UID: %1$d</string>
     <string name="target_pid">Target PID: %s</string>
@@ -119,7 +102,7 @@
 
     <!--MagiskHide-->
     <string name="show_system_app">Show system apps</string>
-    <string name="show_os_app">Show OS apps</string>
+    <string name="show_os_app">Show core apps</string>
     <string name="hide_filter_hint">Filter by name</string>
     <string name="sort_by_name">Sort by name</string>
     <string name="sort_by_package_name">Sort by package name</string>
@@ -158,10 +141,6 @@
     <string name="settings_dark_mode_dark">Always dark</string>
     <string name="settings_download_path_title">Download path</string>
     <string name="settings_download_path_message">Files will be saved to %1$s</string>
-    <string name="settings_hide_app_title">Hide the Magisk app</string>
-    <string name="settings_hide_app_summary">Install a proxy app with a random package ID and custom app label</string>
-    <string name="settings_restore_app_title">Restore the Magisk app</string>
-    <string name="settings_restore_app_summary">Unhide the app and restore the original APK</string>
     <string name="language">Language</string>
     <string name="system_default">(System default)</string>
     <string name="settings_check_update_title">Check for updates</string>
@@ -180,27 +159,7 @@
     <string name="settings_hosts_title">Systemless hosts</string>
     <string name="settings_hosts_summary">Systemless hosts support for ad blocking apps</string>
     <string name="settings_hosts_toast">Added systemless hosts module</string>
-    <string name="settings_app_name_hint">New name</string>
-    <string name="settings_app_name_helper">App will be repackaged with this name</string>
-    <string name="settings_app_name_error">Invalid format</string>
-    <string name="settings_su_app_adb">Apps and ADB</string>
-    <string name="settings_su_app">Apps only</string>
-    <string name="settings_su_adb">ADB only</string>
-    <string name="settings_su_disable">Disabled</string>
-    <string name="settings_su_request_10">10 seconds</string>
-    <string name="settings_su_request_15">15 seconds</string>
-    <string name="settings_su_request_20">20 seconds</string>
-    <string name="settings_su_request_30">30 seconds</string>
-    <string name="settings_su_request_45">45 seconds</string>
-    <string name="settings_su_request_60">60 seconds</string>
-    <string name="superuser_access">Superuser access</string>
-    <string name="auto_response">Automatic response</string>
-    <string name="request_timeout">Request timeout</string>
     <string name="superuser_notification">Superuser notification</string>
-    <string name="settings_su_reauth_title">Reauthenticate after upgrade</string>
-    <string name="settings_su_reauth_summary">Ask for Superuser permissions again after upgrading apps</string>
-    <string name="settings_su_tapjack_title">Tapjacking protection</string>
-    <string name="settings_su_tapjack_summary">The Superuser prompt dialog won\'t respond to input while obscured by any other window or overlay</string>
     <string name="settings_su_auth_title">User authentication</string>
     <string name="settings_su_auth_summary">Ask for user authentication during Superuser requests</string>
     <string name="settings_su_auth_insecure">No authentication method is configured on the device</string>
@@ -214,7 +173,6 @@
     <string name="color_mode_monet_system">Monet (System)</string>
     <string name="color_mode_monet_light">Monet (Light)</string>
     <string name="color_mode_monet_dark">Monet (Dark)</string>
-    <string name="setting_add_shortcut_summary">Add a pretty shortcut to the home screen in case the name and icon are difficult to recognize after hiding the app</string>
     <string name="settings_doh_title">DNS over HTTPS</string>
     <string name="settings_doh_description">Workaround DNS poisoning in some nations</string>
     <string name="settings_random_name_title">Randomize output name</string>
@@ -238,26 +196,28 @@
     <string name="update_channel">Magisk updates</string>
     <string name="progress_channel">Progress notifications</string>
     <string name="updated_channel">Update complete</string>
+    <string name="su_notification_channel">Superuser Notifications</string>
     <string name="download_complete">Download complete</string>
     <string name="download_file_error">Error downloading file</string>
     <string name="magisk_update_title">Magisk update available!</string>
     <string name="updated_title">Magisk updated</string>
     <string name="updated_text">Tap to open app</string>
+    <string name="su_notification_granted_title">Superuser Granted</string>
+    <string name="su_notification_denied_title">Superuser Denied</string>
 
     <!--Toasts, Dialogs-->
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="enabled">Enabled</string>
+    <string name="disabled">Disabled</string>
     <string name="repo_install_title">Install %1$s %2$s(%3$d)</string>
     <string name="download">Download</string>
     <string name="reboot">Reboot</string>
     <string name="close">Close</string>
     <string name="release_notes">Release notes</string>
-    <string name="flashing">Flashing…</string>
-    <string name="running">Running…</string>
-    <string name="done">Done!</string>
+    <string name="flashing">Flashing…</string>    <string name="done">Done!</string>
     <string name="done_action">Done running action of %1$s</string>
     <string name="failure">Failed!</string>
-    <string name="hide_app_title">Hiding the Magisk app…</string>
     <string name="open_link_failed_toast">No app found to open the link</string>
     <string name="complete_uninstall">Complete uninstall</string>
     <string name="restore_img">Restore images</string>
@@ -275,14 +235,11 @@
     <string name="unsupport_system_app_msg">Running this app as a system app isn\'t supported. Please revert the app to a user app.</string>
     <string name="unsupport_other_su_msg">A \"su\" binary not from Magisk has been detected. Please remove any competing root solution and/or reinstall Magisk.</string>
     <string name="unsupport_external_storage_msg">Magisk is installed to external storage. Please move the app to internal storage.</string>
-    <string name="unsupport_nonroot_stub_msg">The hidden Magisk app cannot continue to work because root was lost. Please restore the original APK.</string>
-    <string name="unsupport_nonroot_stub_title">@string/settings_restore_app_title</string>
     <string name="external_rw_permission_denied">Grant storage permission to enable this functionality</string>
     <string name="post_notifications_denied">Grant notifications permission to enable this functionality</string>
     <string name="install_unknown_denied">Allow \"Install unknown apps\" to enable this functionality</string>
-    <string name="add_shortcut_title">Add shortcut to home screen</string>
-    <string name="add_shortcut_msg">After hiding this app, its name and icon might become difficult to recognize. Do you want to add a pretty shortcut to the home screen?</string>
     <string name="app_not_found">No app found to handle this action</string>
     <string name="reboot_apply_change">Reboot to apply changes</string>
-    <string name="restore_app_confirmation">This will restore the hidden app back to the original app. Do you really want to do this?</string>
+    <string name="running_exit_title">Execution in progress</string>
+    <string name="running_exit_msg">Are you sure you want to exit? The running operation may not complete.</string>
 </resources>

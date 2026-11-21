@@ -29,6 +29,89 @@ static void set_script_env() {
         setenv("ZYGISK_ENABLED", "1", 1);
 };
 
+struct exec_t {
+    bool err = false;
+    int fd = -2;
+    void (*pre_exec)() = nullptr;
+    int (*fork)() = xfork;
+    const char **argv = nullptr;
+};
+
+static int exec_command(exec_t &exec) {
+    auto pipefd = array{-1, -1};
+    int outfd = -1;
+
+    if (exec.fd == -1) {
+        if (xpipe2(pipefd.data(), O_CLOEXEC) == -1)
+            return -1;
+        outfd = pipefd[1];
+    } else if (exec.fd >= 0) {
+        outfd = exec.fd;
+    }
+
+    int pid = exec.fork();
+    if (pid < 0) {
+        close(pipefd[0]);
+        close(pipefd[1]);
+        return -1;
+    } else if (pid) {
+        if (exec.fd == -1) {
+            exec.fd = pipefd[0];
+            close(pipefd[1]);
+        }
+        return pid;
+    }
+
+    // Unblock all signals
+    sigset_t set;
+    sigfillset(&set);
+    pthread_sigmask(SIG_UNBLOCK, &set, nullptr);
+
+    if (outfd >= 0) {
+        xdup2(outfd, STDOUT_FILENO);
+        if (exec.err)
+            xdup2(outfd, STDERR_FILENO);
+        close(outfd);
+    }
+
+    // Call the pre-exec callback
+    if (exec.pre_exec)
+        exec.pre_exec();
+
+    execve(exec.argv[0], (char **) exec.argv, environ);
+    PLOGE("execve %s", exec.argv[0]);
+    exit(-1);
+}
+
+template <class ...Args>
+static int exec_command(exec_t &exec, Args &&...args) {
+    const char *argv[] = {args..., nullptr};
+    exec.argv = argv;
+    return exec_command(exec);
+}
+
+template <class ...Args>
+static int exec_command_sync(exec_t &exec, Args &&...args) {
+    const char *argv[] = {args..., nullptr};
+    exec.argv = argv;
+    int pid = exec_command(exec);
+    if (pid < 0)
+        return -1;
+    int status;
+    waitpid(pid, &status, 0);
+    return WEXITSTATUS(status);
+}
+
+template <class ...Args>
+static void exec_command_async(Args &&...args) {
+    const char *argv[] = {args..., nullptr};
+    exec_t exec {
+        .fork = fork_dont_care,
+        .argv = argv,
+    };
+    exec_command(exec);
+}
+
 void exec_script(Utf8CStr script) {
     exec_t exec {
         .pre_exec = set_script_env,
@@ -149,25 +232,10 @@ void exec_module_scripts(Utf8CStr stage, const rust::Vec<ModuleInfo> &module_lis
     PFS_DONE()
 }
 
-constexpr char install_script[] = R"EOF(
-APK=%s
-log -t Magisk "pm_install: $APK"
-log -t Magisk "pm_install: $(pm install -g -r $APK 2>&1)"
-appops set %s REQUEST_INSTALL_PACKAGES allow
-rm -f $APK
-)EOF";
-
-void install_apk(Utf8CStr apk) {
-    setfilecon(apk.c_str(), MAGISK_FILE_CON);
-    char cmds[sizeof(install_script) + 4096];
-    ssprintf(cmds, sizeof(cmds), install_script, apk.c_str(), JAVA_PACKAGE_NAME);
-    exec_command_async("/system/bin/sh", "-c", cmds);
-}
-
 constexpr char uninstall_script[] = R"EOF(
 PKG=%s
 log -t Magisk "pm_uninstall: $PKG"
-log -t Magisk "pm_uninstall: $(pm uninstall $PKG 2>&1)"
+log -t Magisk "pm_uninstall: $(pm uninstall --user all $PKG 2>&1)"
 )EOF";
 
 void uninstall_pkg(Utf8CStr pkg) {

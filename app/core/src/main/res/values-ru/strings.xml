@@ -44,24 +44,22 @@
     <string name="install_inactive_slot">Установка во второй слот (после OTA-обновления)</string>
     <string name="install_inactive_slot_msg">Ваше устройство будет принудительно перезагружено в неактивный (противоположный) слот!\nИспользуйте эту опцию только при интеграции Magisk после OTA-обновления!\nПродолжить?</string>
     <string name="setup_title">Расширенная установка</string>
-    <string name="select_patch_file">Пропатчить boot-образ</string>
-    <string name="patch_file_msg">Выберите файл образа (*.img) или архив ODIN (*.tar)</string>
     <string name="reboot_delay_toast">Перезагрузка через 5 секунд…</string>
     <string name="flash_screen_title">Установка</string>
 
     <!--Superuser-->
-    <string name="su_request_title">Запрос прав суперпользователя</string>
-    <string name="touch_filtered_warning">Одно из приложений отображается поверх окна Magisk, выдача Root-прав недоступна</string>
+
+
     <string name="deny">Запретить</string>
-    <string name="prompt">Запросить</string>
+
     <string name="grant">Разрешить</string>
-    <string name="su_warning">Разрешить полный доступ к устройству?\nЕсли не уверены - отклоните данный запрос!</string>
-    <string name="forever">Навсегда</string>
-    <string name="once">Единожды</string>
-    <string name="tenmin">10 мин.</string>
-    <string name="twentymin">20 мин.</string>
-    <string name="thirtymin">30 мин.</string>
-    <string name="sixtymin">60 мин.</string>
+
+
+
+
+
+
+
     <string name="su_allow_toast">%1$s предоставлены права суперпользователя</string>
     <string name="su_deny_toast">%1$s отказано в правах суперпользователя</string>
     <string name="su_snack_grant">%1$s предоставлены права суперпользователя</string>
@@ -126,10 +124,6 @@
     <string name="settings_dark_mode_dark">Всегда тёмный</string>
     <string name="settings_download_path_title">Папка для загрузок</string>
     <string name="settings_download_path_message">Файлы будут загружаться в %1$s</string>
-    <string name="settings_hide_app_title">Скрытие приложения Magisk</string>
-    <string name="settings_hide_app_summary">Пересобрать приложение Magisk с другим названием и случайным именем пакета</string>
-    <string name="settings_restore_app_title">Восстановление приложения Magisk</string>
-    <string name="settings_restore_app_summary">Восстановить приложение Magisk к исходному состоянию</string>
     <string name="language">Язык</string>
     <string name="system_default">По умолчанию</string>
     <string name="settings_check_update_title">Проверка обновлений</string>
@@ -147,32 +141,13 @@
     <string name="settings_hosts_title">Внесистемный hosts файл</string>
     <string name="settings_hosts_summary">Поддержка внесистемного hosts файла для приложений, блокирующих рекламу</string>
     <string name="settings_hosts_toast">Модуль для внесистемного hosts файла установлен</string>
-    <string name="settings_app_name_hint">Введите имя</string>
-    <string name="settings_app_name_helper">Приложение будет пересобрано с этим именем</string>
-    <string name="settings_app_name_error">Некорректный формат</string>
-    <string name="settings_su_app_adb">Приложения и ADB</string>
-    <string name="settings_su_app">Только приложения</string>
-    <string name="settings_su_adb">Только ADB</string>
-    <string name="settings_su_disable">Отключён</string>
-    <string name="settings_su_request_10">10 секунд</string>
-    <string name="settings_su_request_15">15 секунд</string>
-    <string name="settings_su_request_20">20 секунд</string>
-    <string name="settings_su_request_30">30 секунд</string>
-    <string name="settings_su_request_45">45 секунд</string>
-    <string name="settings_su_request_60">60 секунд</string>
-    <string name="superuser_access">Уровень доступа</string>
-    <string name="auto_response">Автоматический ответ</string>
-    <string name="request_timeout">Ожидание ответа</string>
     <string name="superuser_notification">Уведомления суперпользователя</string>
-    <string name="settings_su_reauth_title">Повторная аутентификация</string>
-    <string name="settings_su_reauth_summary">Повторный запрос прав суперпользователя после обновления приложений</string>
-    <string name="settings_su_tapjack_title">Защита от перехвата нажатий</string>
+
     <string name="settings_su_auth_title">Аутентификация пользователя</string>
     <string name="settings_su_auth_summary">Требовать аутентификацию пользователя при запросах Superuser</string>
     <string name="settings_su_auth_insecure">На устройстве не настроен метод аутентификации</string>
-    <string name="settings_su_tapjack_summary">Окно запроса прав суперпользователя будет неактивно пока активированы наложения экрана</string>
+
     <string name="settings_customization">Персонализация</string>
-    <string name="setting_add_shortcut_summary">Добавить ярлык на рабочий стол для удобного восприятия приложения после его скрытия</string>
     <string name="settings_doh_title">DNS поверх HTTPS</string>
     <string name="settings_doh_description">Активировать DoH (используйте при проблемах с подключением к сети)</string>
     <string name="settings_random_name_title">Случайное имя образа</string>
@@ -214,7 +189,6 @@
     <string name="flashing">Установка…</string>
     <string name="done">Завершено!</string>
     <string name="failure">Ошибка!</string>
-    <string name="hide_app_title">Скрытие приложения Magisk…</string>
     <string name="open_link_failed_toast">Приложения для открытия ссылки не найдены</string>
     <string name="complete_uninstall">Полное удаление</string>
     <string name="restore_img">Восстановить разделы</string>
@@ -232,15 +206,9 @@
     <string name="unsupport_system_app_msg">Запуск приложения в качестве системного невозможен. Пожалуйста, переустановите его как пользовательское.</string>
     <string name="unsupport_other_su_msg">Обнаружен неподдерживаемый бинарный файл \"su\". Пожалуйста, удалите сторонний провайдер Root-прав и/или переустановите Magisk.</string>
     <string name="unsupport_external_storage_msg">Приложение установлено во внешнее хранилище. Пожалуйста, переустановите его во внутреннее хранилище.</string>
-    <string name="unsupport_nonroot_stub_msg">Пересобранное для скрытия приложение Magisk не может дальше работать, поскольку Root-права недоступны. Пожалуйста, восстановите приложение к исходному состоянию.</string>
-    <string name="unsupport_nonroot_stub_title">@string/settings_restore_app_title</string>
     <string name="external_rw_permission_denied">Предоставьте разрешение на доступ к хранилищу</string>
     <string name="post_notifications_denied">Предоставьте разрешение на отправку уведомлений</string>
     <string name="install_unknown_denied">Предоставьте разрешение на "Установку из неизвестных источников"</string>
-    <string name="add_shortcut_title">Добавление ярлыка</string>
-    <string name="add_shortcut_msg">После скрытия приложения Magisk его название и иконка могут быть неудобны для восприятия. Хотите создать ярлык на рабочем столе?</string>
     <string name="app_not_found">Приложение для обработки этого действия не найдено</string>
     <string name="reboot_apply_change">Перезагрузите устройство для применения изменений</string>
-    <string name="restore_app_confirmation">Это действие восстановит пересобранное для скрытия приложение к исходному состоянию. Вы действительно хотите продолжить?</string>
-
 </resources>

@@ -1,6 +1,5 @@
 package com.topjohnwu.magisk.core
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.IntentCompat
@@ -18,7 +17,6 @@ open class Receiver : BaseReceiver() {
 
     private val policyDB get() = ServiceLocator.policyDB
 
-    @SuppressLint("InlinedApi")
     private fun getPkg(intent: Intent): String? {
         val pkg = intent.getStringExtra(Intent.EXTRA_PACKAGE_NAME)
         return pkg ?: intent.data?.schemeSpecificPart
@@ -45,11 +43,7 @@ open class Receiver : BaseReceiver() {
                         DownloadEngine.start(context, it)
                     }
             }
-            Intent.ACTION_PACKAGE_REPLACED -> {
-                // This will only work pre-O
-                if (Config.suReAuth)
-                    getUid(intent)?.let { rmPolicy(it) }
-            }
+
             Intent.ACTION_UID_REMOVED -> {
                 getUid(intent)?.let { rmPolicy(it) }
             }

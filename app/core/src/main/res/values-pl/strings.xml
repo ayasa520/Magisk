@@ -44,24 +44,22 @@
     <string name="install_inactive_slot">Zainstaluj w nieaktywnym slocie (po OTA)</string>
     <string name="install_inactive_slot_msg">Po ponownym uruchomieniu twoje urządzenie zostanie ZMUSZONE do rozruchu z aktualnie nieaktywnego slotu!\nUżywaj tej opcji tylko po ukończeniu aktualizacji OTA.\nKontynuować?</string>
     <string name="setup_title">Dodatkowa konfiguracja</string>
-    <string name="select_patch_file">Wybierz i załataj plik</string>
-    <string name="patch_file_msg">Wybierz obraz raw (*.img) lub plik tar ODIN (*.tar) lub payload.bin (*.bin)</string>
     <string name="reboot_delay_toast">Ponowne uruchomienie za 5 sekund…</string>
     <string name="flash_screen_title">Instalacja</string>
 
     <!--Superuser-->
-    <string name="su_request_title">Żądanie dostępu do Superusera</string>
-    <string name="touch_filtered_warning">Ponieważ aplikacja zasłania żądanie o Superusera, Magisk nie może zweryfikować twojej odpowiedzi</string>
+
+
     <string name="deny">Odmów</string>
-    <string name="prompt">Zapytaj</string>
+
     <string name="grant">Zezwól</string>
-    <string name="su_warning">Udziela pełnego dostępu do urządzenia.\nOdmów, jeżeli nie jesteś pewien!</string>
-    <string name="forever">Zawsze</string>
-    <string name="once">Raz</string>
-    <string name="tenmin">10 min</string>
-    <string name="twentymin">20 min</string>
-    <string name="thirtymin">30 min</string>
-    <string name="sixtymin">60 min</string>
+
+
+
+
+
+
+
     <string name="su_allow_toast">%1$s otrzymał uprawnienia Superusera</string>
     <string name="su_deny_toast">%1$s odmówiono uprawnień Superusera</string>
     <string name="su_snack_grant">Przyznano uprawnienia Superusera dla %1$s</string>
@@ -126,10 +124,6 @@
     <string name="settings_dark_mode_dark">Zawsze ciemny</string>
     <string name="settings_download_path_title">Ścieżka pobierania plików</string>
     <string name="settings_download_path_message">Pliki zostaną zapisane do %1$s</string>
-    <string name="settings_hide_app_title">Ukryj aplikację Magisk</string>
-    <string name="settings_hide_app_summary">Zainstaluj aplikację proxy z losowym ID pakietu i własną etykietą</string>
-    <string name="settings_restore_app_title">Przywróć aplikację Magisk</string>
-    <string name="settings_restore_app_summary">Przestań ukrywać aplikację i przywróć oryginalny plik APK</string>
     <string name="language">Język</string>
     <string name="system_default">(Domyślny systemowy)</string>
     <string name="settings_check_update_title">Sprawdzanie aktualizacji</string>
@@ -147,32 +141,13 @@
     <string name="settings_hosts_title">Hosty Systemless</string>
     <string name="settings_hosts_summary">Wsparcie hostów Systemless dla aplikacji blokujących reklamy</string>
     <string name="settings_hosts_toast">Dodano moduł hostów Systemless</string>
-    <string name="settings_app_name_hint">Nowa nazwa</string>
-    <string name="settings_app_name_helper">Aplikacja zostanie przepakowana z tą nazwą</string>
-    <string name="settings_app_name_error">Nieprawidłowy format</string>
-    <string name="settings_su_app_adb">Aplikacje i ADB</string>
-    <string name="settings_su_app">Tylko aplikacje</string>
-    <string name="settings_su_adb">Tylko ADB</string>
-    <string name="settings_su_disable">Wyłączone</string>
-    <string name="settings_su_request_10">10 sekund</string>
-    <string name="settings_su_request_15">15 sekund</string>
-    <string name="settings_su_request_20">20 sekund</string>
-    <string name="settings_su_request_30">30 sekund</string>
-    <string name="settings_su_request_45">45 sekund</string>
-    <string name="settings_su_request_60">60 sekund</string>
-    <string name="superuser_access">Dostęp do Superusera</string>
-    <string name="auto_response">Automatyczna reakcja</string>
-    <string name="request_timeout">Limit czasu żądania</string>
     <string name="superuser_notification">Powiadomienia Superusera</string>
-    <string name="settings_su_reauth_title">Ponowienie uwierzytelniania po aktualizacji</string>
-    <string name="settings_su_reauth_summary">Zapytaj ponownie o uprawnienia Superusera po uaktualnieniu aplikacji</string>
-    <string name="settings_su_tapjack_title">Ochrona przed Tapjackingiem (niezamierzonym kliknięciem)</string>
-    <string name="settings_su_tapjack_summary">Okno dialogowe z żądaniem Superusera nie będzie reagować na odpowiedź, jeżeli będzie zasłonięte przez inne okno lub nakładkę</string>
+
+
     <string name="settings_su_auth_title">Uwierzytelnianie użytkownika</string>
     <string name="settings_su_auth_summary">Pytaj o uwierzytelnienie użytkownika podczas żądań Superusera</string>
     <string name="settings_su_auth_insecure">Nie skonfigurowano żadnej metody uwierzytelniania na tym urządzeniu</string>
     <string name="settings_customization">Personalizacja</string>
-    <string name="setting_add_shortcut_summary">Umieść ładny skrót na ekranie głównym na wypadek, gdyby nazwa i ikona były trudne do rozpoznania po ukryciu aplikacji</string>
     <string name="settings_doh_title">DNS over HTTPS</string>
     <string name="settings_doh_description">Zapobiegaj zatruwaniu DNS (DNS poisoning) w niektórych krajach</string>
 
@@ -212,7 +187,6 @@
     <string name="flashing">Flashowanie…</string>
     <string name="done">Gotowe!</string>
     <string name="failure">Błąd</string>
-    <string name="hide_app_title">Ukrywanie aplikacji Magisk…</string>
     <string name="open_link_failed_toast">Nie znaleziono aplikacji do otwarcia linku</string>
     <string name="complete_uninstall">Odinstaluj całkowicie</string>
     <string name="restore_img">Przywróć obrazy</string>
@@ -230,15 +204,9 @@
     <string name="unsupport_system_app_msg">Uruchomienie tej aplikacji jako aplikacja systemowa nie jest obsługiwane. Przywróć aplikację do stanu aplikacji użytkownika.</string>
     <string name="unsupport_other_su_msg">Wykryto plik binarny \"su\" nie należący do Magisk. Usuń wszelkie konkurencyjne rozwiązania root i/lub zainstaluj ponownie Magisk.</string>
     <string name="unsupport_external_storage_msg">Magisk jest zainstalowany w pamięci zewnętrznej. Przenieś aplikację do pamięci wewnętrznej.</string>
-    <string name="unsupport_nonroot_stub_msg">Ukryta aplikacja Magisk nie może dłużej działać, ponieważ uprawnienia roota zostały utracone. Przywróć oryginalny plik APK.</string>
-    <string name="unsupport_nonroot_stub_title">@string/settings_restore_app_title</string>
     <string name="external_rw_permission_denied">Zezwól na dostęp do pamięci, aby włączyć tę funkcję</string>
     <string name="post_notifications_denied">Zezwól na otrzymywanie powiadomień, aby włączyć tę funkcję</string>
     <string name="install_unknown_denied">Zezwól na \"Instaluj z nieznanych źródeł\", aby włączyć tę funkcję</string>
-    <string name="add_shortcut_title">Utwórz skrót na ekranie głównym</string>
-    <string name="add_shortcut_msg">Po ukryciu tej aplikacji, jej nazwa i ikona może być trudna do rozpoznania. Czy chcesz dodać ładny skrót na ekranie głównym?</string>
     <string name="app_not_found">Nie znaleziono aplikacji do wykonania tej czynności</string>
     <string name="reboot_apply_change">Uruchom ponownie, aby zastosować zmiany</string>
-    <string name="restore_app_confirmation">Spowoduje to przywrócenie ukrytej aplikacji z powrotem do stanu oryginalnej aplikacji. Czy na pewno chcesz to zrobić?</string>
-
 </resources>
